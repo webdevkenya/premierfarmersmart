@@ -1,0 +1,96 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Product {
+  id         String   @id @default(uuid())
+  index      Int      @default(autoincrement())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  name       String   @unique
+  price      String
+  price_type String
+  category   String
+  stock      Int
+  image      String
+  User       User[]
+  Orders     Order[]
+}
+
+model User {
+  id        String    @id @default(uuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  email     String    @unique
+  image     String?
+  role      Role      @default(USER)
+  favorites Product[]
+  addresses Address[]
+  orders    Order[]
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Address {
+  id                     String    @id @default(uuid())
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+  first_name             String
+  last_name              String
+  mobile_phone_number    String
+  alternate_phone_number String?
+  specific_address       String
+  is_default             Boolean   @default(false)
+  User                   User?     @relation(fields: [userId], references: [id])
+  userId                 String?
+  Location               Location? @relation(fields: [locationId], references: [id])
+  locationId             String?
+}
+
+model Location {
+  id        String    @id @default(uuid())
+  index     Int       @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  name      String    @unique
+  shipping  String
+  county    String
+  town      String
+  address   Address[]
+}
+
+model Order {
+  id             String    @id @default(uuid())
+  index          Int       @default(autoincrement())
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  products       Product[]
+  is_shipped     Boolean   @default(false)
+  amount_payable Int
+  shipping_cost  Int
+  User           User?     @relation(fields: [userId], references: [id])
+  userId         String?
+  payment        Stk?
+}
+
+model Stk {
+  id                String   @id @default(uuid())
+  index             Int      @default(autoincrement())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  merchantrequestid String
+  checkoutrequestid String   @unique
+  resultcode        Int
+  resultdesc        String
+  callbackmetadata  Json
+  order             Order    @relation(fields: [orderId], references: [id])
+  orderId           String   @unique
+}
