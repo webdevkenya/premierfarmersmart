@@ -18,8 +18,8 @@ model Product {
   category   String
   stock      Int
   image      String
-  User       User[]
-  Orders     Order[]
+  users      User[]
+  orders     Order[]
 }
 
 model User {
@@ -64,7 +64,7 @@ model Location {
   shipping  String
   county    String
   town      String
-  address   Address[]
+  addresses Address[]
 }
 
 model Order {
@@ -74,8 +74,8 @@ model Order {
   updatedAt      DateTime  @updatedAt
   products       Product[]
   is_shipped     Boolean   @default(false)
-  amount_payable Int
-  shipping_cost  Int
+  amount_payable String
+  shipping_cost  String
   User           User?     @relation(fields: [userId], references: [id])
   userId         String?
   payment        Stk?
@@ -91,6 +91,6 @@ model Stk {
   resultcode        Int
   resultdesc        String
   callbackmetadata  Json
-  order             Order    @relation(fields: [orderId], references: [id])
+  Order             Order    @relation(fields: [orderId], references: [id])
   orderId           String   @unique
 }
