@@ -13,6 +13,11 @@ type Address {
   user: User
 }
 
+type Edge {
+  cursor: String
+  node: Product
+}
+
 type Location {
   addresses: [Address]
   county: String
@@ -32,6 +37,11 @@ type Order {
   user: User
 }
 
+type PageInfo {
+  endCursor: String
+  hasNextPage: Boolean
+}
+
 type Product {
   category: String
   id: String
@@ -45,8 +55,13 @@ type Product {
 
 type Query {
   locations: [Location]!
-  products: [Product]!
+  products(after: String, first: Int): Response
   users: [User]!
+}
+
+type Response {
+  edges: [Edge]
+  pageInfo: PageInfo
 }
 
 enum Role {

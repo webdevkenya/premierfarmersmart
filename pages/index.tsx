@@ -3,22 +3,36 @@ import Head from 'next/head';
 import { gql, useQuery } from '@apollo/client';
 
 const AllProductsQuery = gql`
-	query {
-		products {
-			id
-			name
-			price
-			price_type
-			category
+	query allProductsQuery($first: Int, $after: String) {
+		products(first: $first, after: $after) {
+			pageInfo {
+				endCursor
+				hasNextPage
+			}
+			edges {
+				cursor
+				node {
+					id
+					name
+					price
+					price_type
+					category
+					image
+				}
+			}
 		}
 	}
 `;
 
 export default function Home() {
-	const { data, loading, error } = useQuery(AllProductsQuery);
+	const { data, loading, error, fetchMore } = useQuery(AllProductsQuery, {
+		variables: { first: 10 },
+	});
 
 	if (loading) return <p>Loading...</p>;
 	if (error) return <p>Oops something went wrong ... {error.message}</p>;
+
+	const { endCursor, hasNextPage } = data.products.pageInfo;
 
 	return (
 		<>
@@ -36,8 +50,10 @@ export default function Home() {
 			</Head>
 			<main>
 				<div>
-					{data.products.map(
-						({ id, name, price, price_type, category }) => (
+					{data?.products.edges.map(
+						({
+							node: { id, name, price, price_type, category },
+						}) => (
 							<div key={id}>
 								<p>{name}</p>
 								<p>{price}</p>
@@ -45,6 +61,34 @@ export default function Home() {
 								<p>{category}</p>
 							</div>
 						)
+					)}
+				</div>
+				<div>
+					{hasNextPage ? (
+						<button
+							className="px-4 py-2 bg-blue-500 text-white rounded my-10"
+							onClick={() => {
+								fetchMore({
+									variables: { after: endCursor },
+									updateQuery: (
+										prevResult,
+										{ fetchMoreResult }
+									) => {
+										fetchMoreResult.products.edges = [
+											...prevResult.products.edges,
+											...fetchMoreResult.products.edges,
+										];
+										return fetchMoreResult;
+									},
+								});
+							}}
+						>
+							more
+						</button>
+					) : (
+						<p className="my-10 text-center font-medium">
+							You have reached the end!
+						</p>
 					)}
 				</div>
 			</main>
