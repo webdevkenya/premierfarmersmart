@@ -1,6 +1,25 @@
 import Head from 'next/head';
 
+import { gql, useQuery } from '@apollo/client';
+
+const AllProductsQuery = gql`
+	query {
+		products {
+			id
+			name
+			price
+			price_type
+			category
+		}
+	}
+`;
+
 export default function Home() {
+	const { data, loading, error } = useQuery(AllProductsQuery);
+
+	if (loading) return <p>Loading...</p>;
+	if (error) return <p>Oops something went wrong ... {error.message}</p>;
+
 	return (
 		<>
 			<Head>
@@ -17,9 +36,16 @@ export default function Home() {
 			</Head>
 			<main>
 				<div>
-					<h1 className="text-3xl font-bold underline">
-						Hello world!
-					</h1>
+					{data.products.map(
+						({ id, name, price, price_type, category }) => (
+							<div key={id}>
+								<p>{name}</p>
+								<p>{price}</p>
+								<p>{price_type}</p>
+								<p>{category}</p>
+							</div>
+						)
+					)}
 				</div>
 			</main>
 		</>
