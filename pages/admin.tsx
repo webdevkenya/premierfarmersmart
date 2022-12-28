@@ -1,9 +1,10 @@
 // pages/admin.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { gql, useMutation } from '@apollo/client';
 import toast, { Toaster } from 'react-hot-toast';
 import { getSession } from '@auth0/nextjs-auth0';
+import { CldUploadButton, CldImage } from 'next-cloudinary';
 import prisma from '../lib/prisma';
 
 const CreateProductMutation = gql`
@@ -34,6 +35,7 @@ const CreateProductMutation = gql`
 `;
 
 const Admin = () => {
+	const [imageURL, setImageURL] = useState<string>();
 	const {
 		register,
 		handleSubmit,
@@ -50,12 +52,11 @@ const Admin = () => {
 
 	const onSubmit = async (data) => {
 		const { name, price, price_type, category, stock } = data;
-		const image = `https://via.placeholder.com/300`;
 		const variables = {
 			name,
 			price,
 			price_type,
-			image,
+			image: imageURL,
 			category,
 			stock: +stock,
 		};
@@ -70,10 +71,20 @@ const Admin = () => {
 		}
 	};
 
+	const onImageUpload = (error, result, _widget) => {
+		if (error) {
+			console.error(error);
+			toast.error(`Something went wrong 😥 Please try again - ${error}`);
+		}
+		console.log('result', result);
+
+		setImageURL(result?.info?.secure_url); // Updating local state with asset details
+	};
+
 	return (
 		<div className="container mx-auto max-w-md py-12">
 			<Toaster />
-			<h1 className="text-3xl font-medium my-5">Create a new link</h1>
+			<h1 className="text-3xl font-medium my-5">Create a new product</h1>
 			<form
 				className="grid grid-cols-1 gap-y-6 shadow-lg p-8 rounded-lg"
 				onSubmit={handleSubmit(onSubmit)}
@@ -129,10 +140,22 @@ const Admin = () => {
 						className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
 					/>
 				</label>
+				{imageURL && (
+					<CldImage width="600" height="600" src={imageURL} />
+				)}
+				<CldUploadButton
+					className="capitalize bg-blue-500 text-white font-medium py-2 px-4 rounded-md hover:bg-blue-600"
+					onUpload={onImageUpload}
+					uploadPreset={
+						process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+					}
+				>
+					Upload Image
+				</CldUploadButton>
 				<button
 					disabled={loading}
 					type="submit"
-					className="my-4 capitalize bg-blue-500 text-white font-medium py-2 px-4 rounded-md hover:bg-blue-600"
+					className="capitalize bg-blue-500 text-white font-medium py-2 px-4 rounded-md hover:bg-blue-600"
 				>
 					{loading ? (
 						<span className="flex items-center justify-center">
