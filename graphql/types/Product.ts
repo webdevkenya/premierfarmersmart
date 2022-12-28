@@ -1,4 +1,4 @@
-import { objectType, extendType, intArg, stringArg } from 'nexus';
+import { objectType, extendType, intArg, stringArg, nonNull } from 'nexus';
 import { User } from './User';
 
 export const Product = objectType({
@@ -126,6 +126,54 @@ export const ProductsQuery = extendType({
 					},
 					edges: [],
 				};
+			},
+		});
+	},
+});
+
+export const CreateProductMutation = extendType({
+	//fixme bad req
+	type: 'Mutation',
+	definition(t) {
+		t.nonNull.field('createProduct', {
+			type: Product,
+			args: {
+				name: nonNull(stringArg()),
+				price: nonNull(stringArg()),
+				price_type: nonNull(stringArg()),
+				image: nonNull(stringArg()),
+				category: nonNull(stringArg()),
+				stock: nonNull(intArg()),
+			},
+			async resolve(_parent, args, ctx) {
+				if (!ctx.user) {
+					throw new Error(
+						`You need to be logged in to perform an action`
+					);
+				}
+				const user = await ctx.prisma.user.findUnique({
+					where: {
+						email: ctx.user.email,
+					},
+				});
+
+				if (user.role !== 'ADMIN') {
+					throw new Error(
+						`You do not have permission to perform action`
+					);
+				}
+				const newProduct = {
+					name: args.name,
+					price: args.price,
+					price_type: args.price_type,
+					image: args.image,
+					category: args.category,
+					stock: args.stock,
+				};
+
+				return await ctx.prisma.product.create({
+					data: newProduct,
+				});
 			},
 		});
 	},

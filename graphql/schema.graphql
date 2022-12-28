@@ -27,6 +27,10 @@ type Location {
   town: String
 }
 
+type Mutation {
+  createProduct(category: String!, image: String!, name: String!, price: String!, price_type: String!, stock: Int!): Product!
+}
+
 type Order {
   amount_payable: String
   id: String

@@ -26,7 +26,7 @@ const AllProductsQuery = gql`
 
 export default function Home() {
 	const { data, loading, error, fetchMore } = useQuery(AllProductsQuery, {
-		variables: { first: 10 },
+		variables: { first: 12 },
 	});
 
 	if (loading) return <p>Loading...</p>;
@@ -49,47 +49,50 @@ export default function Home() {
 				<link rel="icon" href="/favicon.ico" />
 			</Head>
 			<main>
-				<div>
-					{data?.products.edges.map(
-						({
-							node: { id, name, price, price_type, category },
-						}) => (
-							<div key={id}>
-								<p>{name}</p>
-								<p>{price}</p>
-								<p>{price_type}</p>
-								<p>{category}</p>
-							</div>
-						)
-					)}
-				</div>
-				<div>
-					{hasNextPage ? (
-						<button
-							className="px-4 py-2 bg-blue-500 text-white rounded my-10"
-							onClick={() => {
-								fetchMore({
-									variables: { after: endCursor },
-									updateQuery: (
-										prevResult,
-										{ fetchMoreResult }
-									) => {
-										fetchMoreResult.products.edges = [
-											...prevResult.products.edges,
-											...fetchMoreResult.products.edges,
-										];
-										return fetchMoreResult;
-									},
-								});
-							}}
-						>
-							more
-						</button>
-					) : (
-						<p className="my-10 text-center font-medium">
-							You have reached the end!
-						</p>
-					)}
+				<div className="container mx-auto max-w-5xl my-20">
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+						{data?.products.edges.map(
+							({
+								node: { id, name, price, price_type, category },
+							}) => (
+								<div key={id}>
+									<p>{name}</p>
+									<p>{price}</p>
+									<p>{price_type}</p>
+									<p>{category}</p>
+								</div>
+							)
+						)}
+					</div>
+					<div>
+						{hasNextPage ? (
+							<button
+								className="px-4 py-2 bg-blue-500 text-white rounded my-10"
+								onClick={() => {
+									fetchMore({
+										variables: { after: endCursor },
+										updateQuery: (
+											prevResult,
+											{ fetchMoreResult }
+										) => {
+											fetchMoreResult.products.edges = [
+												...prevResult.products.edges,
+												...fetchMoreResult.products
+													.edges,
+											];
+											return fetchMoreResult;
+										},
+									});
+								}}
+							>
+								more
+							</button>
+						) : (
+							<p className="my-10 text-center font-medium">
+								You have reached the end!
+							</p>
+						)}
+					</div>
 				</div>
 			</main>
 		</>
