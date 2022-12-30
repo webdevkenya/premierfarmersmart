@@ -1,4 +1,4 @@
-import { enumType, objectType, extendType } from 'nexus';
+import { enumType, objectType, extendType, nonNull, stringArg } from 'nexus';
 import { Product } from './Product';
 import { Address } from './Address';
 import { Order } from './Order';
@@ -55,13 +55,79 @@ const Role = enumType({
 	members: ['USER', 'ADMIN'],
 });
 
-export const UsersQuery = extendType({
+//query all users
+export const GetAllUsersQuery = extendType({
 	type: 'Query',
 	definition(t) {
-		t.nonNull.list.field('users', {
+		t.nonNull.list.field('getAllUsers', {
 			type: 'User',
 			resolve(_parent, _args, ctx) {
 				return ctx.prisma.user.findMany();
+			},
+		});
+	},
+});
+
+export const AddFavoriteMutation = extendType({
+	type: 'Mutation',
+	definition(t) {
+		t.nonNull.field('addFavorite', {
+			type: Product,
+			args: {
+				id: nonNull(stringArg()),
+			},
+			async resolve(_parent, args, ctx) {
+				if (!ctx.user) {
+					throw new Error(
+						`You need to be logged in to perform an action`
+					);
+				}
+				const product = await ctx.prisma.product.findUnique({
+					where: { id: args.id },
+				});
+
+				if (!product) {
+					throw new Error(`Product with id ${args.id} not found`);
+				}
+
+				return await ctx.prisma.user.update({
+					where: {
+						email: ctx.user.email,
+					},
+					data: { favorites: { connect: { id: args.id } } },
+				});
+			},
+		});
+		t.nonNull.field('deleteFavorite', {
+			type: Product,
+			args: {
+				id: stringArg(),
+			},
+			async resolve(_parent, args, ctx) {
+				if (!ctx.user) {
+					throw new Error(
+						`You need to be logged in to perform an action`
+					);
+				}
+
+				const product = await ctx.prisma.product.findUnique({
+					where: { id: args.id },
+				});
+
+				if (!product) {
+					throw new Error(`Product with id ${args.id} not found`);
+				}
+
+				return ctx.prisma.user.update({
+					where: {
+						email: ctx.user.email,
+					},
+					data: {
+						favorites: {
+							disconnect: { id: args.id },
+						},
+					},
+				});
 			},
 		});
 	},

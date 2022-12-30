@@ -1,4 +1,11 @@
-import { objectType, extendType, intArg, stringArg, nonNull } from 'nexus';
+import {
+	objectType,
+	extendType,
+	intArg,
+	stringArg,
+	nonNull,
+	enumType,
+} from 'nexus';
 import { User } from './User';
 
 export const Product = objectType({
@@ -12,6 +19,7 @@ export const Product = objectType({
 		t.int('stock');
 		t.string('image');
 		t.string('category');
+		t.field('currency', { type: Currency });
 		t.list.field('users', {
 			type: User,
 			async resolve(parent, _args, ctx) {
@@ -25,6 +33,11 @@ export const Product = objectType({
 			},
 		});
 	},
+});
+
+const Currency = enumType({
+	name: 'Currency',
+	members: ['KES', 'TZS', 'UGX', 'ETB', 'RWF'],
 });
 
 export const Edge = objectType({
@@ -65,7 +78,7 @@ export const ProductsQuery = extendType({
 				first: intArg(),
 				after: stringArg(),
 			},
-			async resolve(_, args, ctx) {
+			async resolve(_parent, args, ctx) {
 				let queryResults = null;
 
 				if (args.after) {
@@ -84,7 +97,7 @@ export const ProductsQuery = extendType({
 						take: args.first,
 					});
 				}
-				// if the initial request returns links
+				// if the initial request returns products
 				if (queryResults.length > 0) {
 					// get last element in previous result set
 					const lastProductInResults =
@@ -103,6 +116,7 @@ export const ProductsQuery = extendType({
 								index: 'asc',
 							},
 						});
+
 					// return response
 					const result = {
 						pageInfo: {
@@ -118,7 +132,7 @@ export const ProductsQuery = extendType({
 
 					return result;
 				}
-				//
+
 				return {
 					pageInfo: {
 						endCursor: null,
@@ -132,7 +146,6 @@ export const ProductsQuery = extendType({
 });
 
 export const CreateProductMutation = extendType({
-	//fixme bad req
 	type: 'Mutation',
 	definition(t) {
 		t.nonNull.field('createProduct', {

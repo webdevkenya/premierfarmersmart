@@ -1,8 +1,7 @@
-// pages/admin.tsx
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { gql, useMutation } from '@apollo/client';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import { getSession } from '@auth0/nextjs-auth0';
 import { CldUploadButton, CldImage } from 'next-cloudinary';
 import prisma from '../lib/prisma';
@@ -83,7 +82,6 @@ const Admin = () => {
 
 	return (
 		<div className="container mx-auto max-w-md py-12">
-			<Toaster />
 			<h1 className="text-3xl font-medium my-5">Create a new product</h1>
 			<form
 				className="grid grid-cols-1 gap-y-6 shadow-lg p-8 rounded-lg"

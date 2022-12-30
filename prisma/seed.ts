@@ -25,7 +25,7 @@ let locations: Location[] = [];
 for (let i = 0; i < 50; i++) {
 	products.push({
 		name: faker.commerce.productName(),
-		price: faker.commerce.price(100, 1000, 0, 'KES'),
+		price: faker.commerce.price(100, 1000, 0),
 		price_type: faker.commerce.productMaterial(),
 		category: faker.commerce.department(),
 		stock: 50,
@@ -36,7 +36,7 @@ for (let i = 0; i < 50; i++) {
 for (let i = 0; i < 10; i++) {
 	locations.push({
 		name: faker.address.secondaryAddress(),
-		shipping: faker.commerce.price(100, 200, 0, 'KES'),
+		shipping: faker.commerce.price(100, 200, 0),
 		county: faker.address.county(),
 		town: faker.address.cityName(),
 	});

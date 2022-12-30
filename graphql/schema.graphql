@@ -13,6 +13,14 @@ type Address {
   user: User
 }
 
+enum Currency {
+  ETB
+  KES
+  RWF
+  TZS
+  UGX
+}
+
 type Edge {
   cursor: String
   node: Product
@@ -28,7 +36,9 @@ type Location {
 }
 
 type Mutation {
+  addFavorite(id: String!): Product!
   createProduct(category: String!, image: String!, name: String!, price: String!, price_type: String!, stock: Int!): Product!
+  deleteFavorite(id: String): Product!
 }
 
 type Order {
@@ -48,6 +58,7 @@ type PageInfo {
 
 type Product {
   category: String
+  currency: Currency
   id: String
   image: String
   name: String
@@ -58,9 +69,9 @@ type Product {
 }
 
 type Query {
+  getAllUsers: [User]!
   locations: [Location]!
   products(after: String, first: Int): Response
-  users: [User]!
 }
 
 type Response {

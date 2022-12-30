@@ -11,6 +11,7 @@ model Product {
   id         String   @id @default(uuid())
   index      Int      @default(autoincrement())
   createdAt  DateTime @default(now())
+  currency   Currency @default(KES)
   updatedAt  DateTime @updatedAt
   name       String   @unique
   price      String
@@ -18,8 +19,17 @@ model Product {
   category   String
   stock      Int
   image      String
+  quantity   Int?
   users      User[]
   orders     Order[]
+}
+
+enum Currency {
+  KES
+  TZS
+  UGX
+  ETB
+  RWF
 }
 
 model User {
