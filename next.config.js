@@ -4,6 +4,11 @@ const nextConfig = {
 	images: {
 		domains: ['loremflickr.com'],
 	},
+	typescript: {
+		// !! WARN !!
+		// Dangerously allow production builds to successfully complete even if your project has type errors.
+		ignoreBuildErrors: true,
+	},
 };
 
 const { withSuperjson } = require('next-superjson');

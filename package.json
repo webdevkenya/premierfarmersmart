@@ -8,7 +8,10 @@
     "start": "next start",
     "lint": "next lint",
     "ts-node": "ts-node --compiler-options \"{\\\"module\\\":\\\"commonjs\\\"}\"",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "vercel-build": "npm run prisma:generate && npm run prisma:migrate && next build",
+    "prisma:generate": "prisma generate --data-proxy",
+    "prisma:migrate": "DATABASE_URL=\"$MIGRATE_DATABASE_URL\" prisma migrate deploy"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
