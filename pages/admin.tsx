@@ -9,7 +9,7 @@ import prisma from '../lib/prisma';
 const CreateProductMutation = gql`
 	mutation (
 		$name: String!
-		$price: String!
+		$price: Int!
 		$price_type: String!
 		$image: String!
 		$category: String!
@@ -53,7 +53,7 @@ const Admin = () => {
 		const { name, price, price_type, category, stock } = data;
 		const variables = {
 			name,
-			price,
+			price: +price,
 			price_type,
 			image: imageURL,
 			category,

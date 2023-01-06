@@ -17,7 +17,7 @@ const AddFavoriteMutation = gql`
 `;
 
 const ProductCard = ({ product }) => {
-	const { image, name, price, id, price_type, currency } = product;
+	const { image, name, price, id, price_type } = product;
 	const { addItem, items } = useShoppingCart();
 
 	const [addFavorite, { loading, error }] = useMutation(AddFavoriteMutation);
@@ -57,7 +57,7 @@ const ProductCard = ({ product }) => {
 				height={300}
 			/>
 			<h3 className="text-lg font-bold text-gray-800 mb-4">{name}</h3>
-			<p className="text-gray-600 mb-4">{`${currency} ${price} / ${price_type}`}</p>
+			<p className="text-gray-600 mb-4">{`KES ${price} / ${price_type}`}</p>
 			<div className="flex items-center justify-between w-full">
 				<button
 					onClick={handleBuy}

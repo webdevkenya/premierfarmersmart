@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 interface Product {
 	name: string;
-	price: string;
+	price: number;
 	price_type: string;
 	category: string;
 	stock: number;
@@ -14,7 +14,7 @@ interface Product {
 
 interface Location {
 	name: string;
-	shipping: string;
+	shipping: number;
 	county: string;
 	town: string;
 }
@@ -25,7 +25,7 @@ let locations: Location[] = [];
 for (let i = 0; i < 50; i++) {
 	products.push({
 		name: faker.commerce.productName(),
-		price: faker.commerce.price(100, 1000, 0),
+		price: +faker.commerce.price(100, 1000, 0),
 		price_type: faker.commerce.productMaterial(),
 		category: faker.commerce.department(),
 		stock: 50,
@@ -36,16 +36,29 @@ for (let i = 0; i < 50; i++) {
 for (let i = 0; i < 10; i++) {
 	locations.push({
 		name: faker.address.secondaryAddress(),
-		shipping: faker.commerce.price(100, 200, 0),
+		shipping: +faker.commerce.price(100, 200, 0),
 		county: faker.address.county(),
 		town: faker.address.cityName(),
 	});
 }
 
 async function main() {
-	await prisma.user.deleteMany();
-	await prisma.product.deleteMany();
-	await prisma.location.deleteMany();
+	//clear db
+	const tablenames = await prisma.$queryRaw<
+		Array<{ tablename: string }>
+	>`SELECT tablename FROM pg_tables WHERE schemaname='public'`;
+
+	const tables = tablenames
+		.map(({ tablename }) => tablename)
+		.filter((name) => name !== '_prisma_migrations')
+		.map((name) => `"public"."${name}"`)
+		.join(', ');
+
+	try {
+		await prisma.$executeRawUnsafe(`TRUNCATE TABLE ${tables} CASCADE;`);
+	} catch (error) {
+		console.log({ error });
+	}
 
 	await prisma.user.create({
 		data: {

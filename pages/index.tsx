@@ -20,7 +20,6 @@ const AllProductsQuery = gql`
 					price_type
 					category
 					image
-					currency
 				}
 			}
 		}

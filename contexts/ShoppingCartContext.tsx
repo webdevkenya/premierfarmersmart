@@ -15,24 +15,23 @@ interface ShoppingCartContextValue {
 	decreaseQuantity: (id: string) => void;
 	isEmpty: boolean;
 	count: number;
+	shipping: number;
+	updateShipping: (amount: number) => void;
+	amountPayable: () => number;
 }
-
-enum Currency {}
 
 interface CartItem {
 	id: string;
 	name: string;
-	price: string;
+	price: number;
 	price_type: string;
 	image: string;
-	currency: Currency;
 	quantity?: number;
 	productTotal?: number;
 }
 
-const getPrice = (str: string) => parseInt(str.replace(/[^\d.]/g, ''));
 const getProductTotal = (quantity, price) => {
-	return quantity * getPrice(price);
+	return quantity * price;
 };
 
 const ShoppingCartContext = createContext<ShoppingCartContextValue>({
@@ -44,11 +43,15 @@ const ShoppingCartContext = createContext<ShoppingCartContextValue>({
 	decreaseQuantity: () => {},
 	isEmpty: true,
 	count: 0,
+	shipping: 0,
+	updateShipping: () => {},
+	amountPayable: () => 0,
 });
 
 const ShoppingCartProvider = ({ children }: { children: ReactNode }) => {
 	const [items, setItems] = useState<CartItem[]>([]);
 	const [count, setCount] = useState<number>(0);
+	const [shipping, setShipping] = useState<number>(0);
 	const [isEmpty, setIsEmpty] = useState<boolean>(true);
 
 	useEffect(() => {
@@ -58,6 +61,10 @@ const ShoppingCartProvider = ({ children }: { children: ReactNode }) => {
 	useEffect(() => {
 		setCount(items.length);
 	}, [items]);
+
+	const updateShipping = (amount: number) => {
+		setShipping(amount);
+	};
 
 	const addItem = (item: CartItem) => {
 		return new Promise<void>((resolve, reject) => {
@@ -69,7 +76,7 @@ const ShoppingCartProvider = ({ children }: { children: ReactNode }) => {
 					{
 						...item,
 						quantity: 1,
-						productTotal: getPrice(item.price),
+						productTotal: item.price,
 					},
 				]);
 				resolve();
@@ -114,6 +121,11 @@ const ShoppingCartProvider = ({ children }: { children: ReactNode }) => {
 		return items.reduce((total, item) => total + item.productTotal, 0);
 	};
 
+	const amountPayable = () => {
+		const total = getTotal();
+		return shipping + total;
+	};
+
 	return (
 		<ShoppingCartContext.Provider
 			value={{
@@ -125,6 +137,9 @@ const ShoppingCartProvider = ({ children }: { children: ReactNode }) => {
 				decreaseQuantity,
 				isEmpty,
 				count,
+				shipping,
+				updateShipping,
+				amountPayable,
 			}}
 		>
 			{children}

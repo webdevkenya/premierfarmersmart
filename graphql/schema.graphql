@@ -13,12 +13,9 @@ type Address {
   user: User
 }
 
-enum Currency {
-  ETB
-  KES
-  RWF
-  TZS
-  UGX
+type County {
+  county: String
+  towns: [Town]
 }
 
 type Edge {
@@ -31,24 +28,36 @@ type Location {
   county: String
   id: String
   name: String
-  shipping: String
+  shipping: Int
   town: String
 }
 
 type Mutation {
   addFavorite(id: String!): Product!
-  createProduct(category: String!, image: String!, name: String!, price: String!, price_type: String!, stock: Int!): Product!
+  createAddress(firstName: String!, lastName: String!, location: String!, phoneNumber: String!, specificAddress: String!): Address!
+  createOrder(amountPayable: Int!, cartTotal: Int!, checkoutrequestid: String!, mpesaNumber: String!, products: [String]!, shippingCost: Int!): Order!
+  createProduct(category: String!, image: String!, name: String!, price: Int!, price_type: String!, stock: Int!): Product!
+  deleteAddress(id: String): Address!
   deleteFavorite(id: String): Product!
 }
 
 type Order {
-  amount_payable: String
+  amount_payable: Int
+  cart_total: Int
+  checkoutrequestid: String
   id: String
-  is_shipped: Boolean
+  mpesa_number: String
   payment: Stk
   products: [Product]
-  shipping_cost: String
+  shipping_cost: Int
+  status: OrderStatus
   user: User
+}
+
+enum OrderStatus {
+  PAID
+  PENDING
+  SHIPPED
 }
 
 type PageInfo {
@@ -58,19 +67,20 @@ type PageInfo {
 
 type Product {
   category: String
-  currency: Currency
   id: String
   image: String
   name: String
-  price: String
+  price: Int
   price_type: String
   stock: Int
   users: [User]
 }
 
 type Query {
+  addresses: [Address]!
+  counties: [County]!
   getAllUsers: [User]!
-  locations: [Location]!
+  order(id: String!): Order!
   products(after: String, first: Int): Response
 }
 
@@ -91,6 +101,11 @@ type Stk {
   order: Order
   resultcode: String
   resultdesc: String
+}
+
+type Town {
+  id: String
+  town: String
 }
 
 type User {

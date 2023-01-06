@@ -1,11 +1,4 @@
-import {
-	objectType,
-	extendType,
-	intArg,
-	stringArg,
-	nonNull,
-	enumType,
-} from 'nexus';
+import { objectType, extendType, intArg, stringArg, nonNull } from 'nexus';
 import { User } from './User';
 
 export const Product = objectType({
@@ -13,13 +6,12 @@ export const Product = objectType({
 	definition(t) {
 		t.string('id');
 		t.string('name');
-		t.string('price');
+		t.int('price');
 		t.string('price_type');
 		t.string('category');
 		t.int('stock');
 		t.string('image');
 		t.string('category');
-		t.field('currency', { type: Currency });
 		t.list.field('users', {
 			type: User,
 			async resolve(parent, _args, ctx) {
@@ -33,11 +25,6 @@ export const Product = objectType({
 			},
 		});
 	},
-});
-
-const Currency = enumType({
-	name: 'Currency',
-	members: ['KES', 'TZS', 'UGX', 'ETB', 'RWF'],
 });
 
 export const Edge = objectType({
@@ -152,7 +139,7 @@ export const CreateProductMutation = extendType({
 			type: Product,
 			args: {
 				name: nonNull(stringArg()),
-				price: nonNull(stringArg()),
+				price: nonNull(intArg()),
 				price_type: nonNull(stringArg()),
 				image: nonNull(stringArg()),
 				category: nonNull(stringArg()),

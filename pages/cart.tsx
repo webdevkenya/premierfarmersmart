@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { useEffect } from 'react';
 import { useShoppingCart } from '../contexts/ShoppingCartContext';
 
 const Cart = () => {
@@ -45,7 +44,6 @@ const Cart = () => {
 										price_type,
 										quantity,
 										productTotal,
-										currency,
 									}) => (
 										<tr key={id}>
 											<td className="text-left">
@@ -91,10 +89,10 @@ const Cart = () => {
 												</div>
 											</td>
 											<td className="text-right">
-												{price}
+												{`KES ${price}`}
 											</td>
 											<td className="text-right">
-												{`${currency} ${productTotal}`}
+												{`KES ${productTotal}`}
 											</td>
 											<td className="text-right">
 												<button
@@ -114,7 +112,7 @@ const Cart = () => {
 						</table>
 						<div className="bg-gray-100 p-4 mt-4">
 							<p className="text-right font-bold">
-								{`Shopping Total : ${getTotal()}`}
+								{`Shopping Total : KES ${getTotal()}`}
 							</p>
 							<p className="text-right text-gray-600">
 								Shipping fees not included
@@ -123,7 +121,7 @@ const Cart = () => {
 						<div className="pt-4 flex justify-center">
 							<Link
 								href="/checkout"
-								className="w-2/6 text-center px-4 py-2 font-medium text-white bg-indigo-600 rounded-full hover:bg-indigo-500 focus:outline-none focus:bg-indigo-500"
+								className="w-full text-center px-4 py-2 font-medium text-white bg-indigo-600 rounded-full hover:bg-indigo-500 focus:outline-none focus:bg-indigo-500"
 							>
 								Checkout
 							</Link>

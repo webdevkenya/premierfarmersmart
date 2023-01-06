@@ -11,10 +11,9 @@ model Product {
   id         String   @id @default(uuid())
   index      Int      @default(autoincrement())
   createdAt  DateTime @default(now())
-  currency   Currency @default(KES)
   updatedAt  DateTime @updatedAt
   name       String   @unique
-  price      String
+  price      Int
   price_type String
   category   String
   stock      Int
@@ -24,21 +23,13 @@ model Product {
   orders     Order[]
 }
 
-enum Currency {
-  KES
-  TZS
-  UGX
-  ETB
-  RWF
-}
-
 model User {
   id        String    @id @default(uuid())
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  role      Role      @default(USER)
   email     String    @unique
   image     String?
-  role      Role      @default(USER)
   favorites Product[]
   addresses Address[]
   orders    Order[]
@@ -50,19 +41,19 @@ enum Role {
 }
 
 model Address {
-  id                     String    @id @default(uuid())
-  createdAt              DateTime  @default(now())
-  updatedAt              DateTime  @updatedAt
+  id                     String   @id @default(uuid())
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
   first_name             String
   last_name              String
   mobile_phone_number    String
   alternate_phone_number String?
   specific_address       String
-  is_default             Boolean   @default(false)
-  User                   User?     @relation(fields: [userId], references: [id])
-  userId                 String?
-  Location               Location? @relation(fields: [locationId], references: [id])
-  locationId             String?
+  is_default             Boolean  @default(false)
+  User                   User     @relation(fields: [userId], references: [id])
+  userId                 String
+  Location               Location @relation(fields: [locationId], references: [id])
+  locationId             String
 }
 
 model Location {
@@ -71,36 +62,55 @@ model Location {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   name      String    @unique
-  shipping  String
+  shipping  Int
   county    String
   town      String
   addresses Address[]
 }
 
 model Order {
-  id             String    @id @default(uuid())
-  index          Int       @default(autoincrement())
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  products       Product[]
-  is_shipped     Boolean   @default(false)
-  amount_payable String
-  shipping_cost  String
-  User           User?     @relation(fields: [userId], references: [id])
-  userId         String?
-  payment        Stk?
+  id                String    @id @default(uuid())
+  index             Int       @default(autoincrement())
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  products          Product[]
+  status            Status    @default(PENDING)
+  cart_total        Int
+  amount_payable    Int
+  shipping_cost     Int
+  mpesa_number      String
+  User              User?     @relation(fields: [userId], references: [id])
+  userId            String?
+  payment           Stk?
+  checkoutrequestid String    @unique
+}
+
+enum Status {
+  PENDING
+  PAID
+  SHIPPED
 }
 
 model Stk {
-  id                String   @id @default(uuid())
-  index             Int      @default(autoincrement())
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id                String             @id @default(uuid())
+  index             Int                @default(autoincrement())
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
   merchantrequestid String
-  checkoutrequestid String   @unique
-  resultcode        Int
+  checkoutrequestid String             @unique
+  resultcode        String
   resultdesc        String
-  callbackmetadata  Json
-  Order             Order    @relation(fields: [orderId], references: [id])
-  orderId           String   @unique
+  callbackmetadata  CallbackMetaData[]
+  Order             Order              @relation(fields: [orderId], references: [id])
+  orderId           String             @unique
+}
+
+model CallbackMetaData {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String
+  value     String
+  Stk       Stk?     @relation(fields: [stkId], references: [id])
+  stkId     String?
 }
