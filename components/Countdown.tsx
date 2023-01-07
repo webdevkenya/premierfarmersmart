@@ -43,12 +43,18 @@ const Countdown = ({ releaseDate }: Props) => {
 
 	return (
 		<div className="flex flex-col items-center h-screen text-center">
-			<Image src={logo} alt="logo" width={558} height={448} />
+			<Image
+				className="w-72 mt-8"
+				src={logo}
+				alt="logo"
+				width={558}
+				height={448}
+			/>
 
-			<h1 className="bg-clip-text text-5xl text-transparent font-extrabold bg-gradient-to-r from-yellow-600 to-red-600">
+			<h1 className="py-5 bg-clip-text text-5xl text-transparent font-extrabold bg-gradient-to-r from-green-900 to-green-700">
 				Coming soon
 			</h1>
-			<h1 className="bg-clip-text py-5 font-extrabold text-transparent text-8xl bg-gradient-to-r from-yellow-600 to-red-600">{`${days} days ${hours}:${minutes}:${seconds}`}</h1>
+			<h1 className="bg-clip-text py-5 font-extrabold text-transparent text-8xl bg-gradient-to-r from-green-900 to-red-500">{`${days} days ${hours}:${minutes}:${seconds}`}</h1>
 		</div>
 	);
 };
