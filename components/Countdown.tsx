@@ -42,7 +42,7 @@ const Countdown = ({ releaseDate }: Props) => {
 	const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
 
 	return (
-		<div className="flex flex-col items-center justify-center h-screen text-center">
+		<div className="flex flex-col items-center h-screen text-center">
 			<Image src={logo} alt="logo" width={558} height={448} />
 
 			<h1 className="bg-clip-text text-5xl text-transparent font-extrabold bg-gradient-to-r from-yellow-600 to-red-600">
