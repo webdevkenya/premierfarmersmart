@@ -3,7 +3,7 @@ import { getSession } from '@auth0/nextjs-auth0';
 import { gql, useMutation } from '@apollo/client';
 import prisma from '../lib/prisma';
 import Image from 'next/image';
-import toast from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 
 const DeleteFavoriteMutation = gql`
 	mutation deleteFavorite($id: String!) {
@@ -33,6 +33,7 @@ const Profile = ({ user: { favorites } }) => {
 
 	return (
 		<div className="container mx-auto max-w-md py-12">
+			<Toaster />
 			<ul className="list-none p-0 m-0">
 				{favorites.map(({ id, name, price, image }) => (
 					<li

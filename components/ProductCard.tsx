@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { gql, useMutation } from '@apollo/client';
 import toast from 'react-hot-toast';
 import { useShoppingCart } from '../contexts/ShoppingCartContext';
+import { CldImage } from 'next-cloudinary';
 
 const AddFavoriteMutation = gql`
 	mutation ($id: String!) {
@@ -49,12 +50,12 @@ const ProductCard = ({ product }) => {
 
 	return (
 		<div className="bg-white rounded-lg shadow p-6 mb-4 flex flex-col items-center">
-			<Image
-				src={image}
+			<CldImage
+				//	className="w-48 h-48 rounded-full mb-4"
 				alt="Product"
-				className="w-48 h-48 rounded-full mb-4"
-				width={300}
-				height={300}
+				width="300"
+				height="300"
+				src={image}
 			/>
 			<h3 className="text-lg font-bold text-gray-800 mb-4">{name}</h3>
 			<p className="text-gray-600 mb-4">{`KES ${price} / ${price_type}`}</p>

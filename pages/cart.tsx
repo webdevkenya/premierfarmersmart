@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { useShoppingCart } from '../contexts/ShoppingCartContext';
+import { CldImage } from 'next-cloudinary';
 
 const Cart = () => {
 	const {
@@ -49,10 +50,12 @@ const Cart = () => {
 											<td className="text-left">
 												<div className="flex items-center">
 													<div className="flex-shrink-0 h-10 w-10">
-														<img
-															className="h-10 w-10 rounded-full"
+														<CldImage
+															//	className="h-10 w-10 rounded-full"
 															src={image}
 															alt="item"
+															width="40"
+															height="40"
 														/>
 													</div>
 													<div className="ml-3">

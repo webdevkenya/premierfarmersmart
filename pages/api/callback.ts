@@ -7,13 +7,13 @@ const validationSchema = yup.object().shape({
 		stkCallback: yup.object().shape({
 			MerchantRequestID: yup.string().required(),
 			CheckoutRequestID: yup.string().required(),
-			ResultCode: yup.string().required(),
+			ResultCode: yup.number().required(),
 			ResultDesc: yup.string().required(),
 			CallbackMetadata: yup.object().shape({
 				Item: yup.array().of(
 					yup.object().shape({
 						Name: yup.string().required(),
-						Value: yup.string().required(),
+						Value: yup.mixed().required(),
 					})
 				),
 			}),
@@ -37,6 +37,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 			res.status(400).end();
 			return;
 		}
+		console.log('req.body', req.body);
 
 		const {
 			MerchantRequestID,
@@ -48,7 +49,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
 		console.log('ResultDesc', ResultDesc);
 
-		if (ResultCode !== '0') {
+		if (ResultCode !== 0) {
 			throw new Error('payment failed : ' + ResultDesc);
 		}
 
@@ -74,7 +75,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 			callbackmetadata: {
 				create: Item.map((item) => ({
 					name: item.Name,
-					value: item.Value,
+					value: String(item.Value),
 				})),
 			},
 			orderId: order.id,
