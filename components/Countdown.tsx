@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
+import logo from '../public/logo.jpeg';
 
 interface Props {
 	releaseDate: string;
@@ -42,7 +43,7 @@ const Countdown = ({ releaseDate }: Props) => {
 
 	return (
 		<div className="flex flex-col items-center justify-center h-screen text-center">
-			<Image src="/logo.jpeg" alt="logo" width={558} height={448} />
+			<Image src={logo} alt="logo" width={558} height={448} />
 
 			<h1 className="bg-clip-text text-5xl text-transparent font-extrabold bg-gradient-to-r from-yellow-600 to-red-600">
 				Coming soon
