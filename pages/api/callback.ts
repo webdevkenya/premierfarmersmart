@@ -49,7 +49,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
 		console.log('ResultDesc', ResultDesc);
 
-		if (ResultCode !== 0) {
+		if (+ResultCode !== 0) {
 			throw new Error('payment failed : ' + ResultDesc);
 		}
 

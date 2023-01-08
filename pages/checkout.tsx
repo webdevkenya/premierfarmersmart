@@ -8,7 +8,7 @@ import AddressBook from '../components/AddressBook';
 import OrderSummary from '../components/OrderSummary';
 import { useShoppingCart } from '../contexts/ShoppingCartContext';
 import { useRouter } from 'next/router';
-import { Toaster } from 'react-hot-toast';
+import { toast, Toaster } from 'react-hot-toast';
 
 const CreateOrderMutation = gql`
 	mutation (
@@ -100,6 +100,9 @@ const Checkout = () => {
 			}
 			const result = await res.json();
 			console.log('result', result);
+			toast.success(
+				'Payment initiated - you will receive a prompt on your phone'
+			);
 
 			const variables = {
 				products: items.map(({ id }) => id),
