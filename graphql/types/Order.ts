@@ -15,8 +15,9 @@ export const Order = objectType({
 	name: 'Order',
 	definition(t) {
 		t.string('id');
-		t.field('status', { type: OrderStatus });
+		t.field('status', { type: PaymentStatus });
 		t.int('cart_total');
+		t.boolean('is_shipped');
 		t.string('mpesa_number');
 		t.string('checkoutrequestid');
 		t.int('amount_payable');
@@ -33,7 +34,18 @@ export const Order = objectType({
 					.User();
 			},
 		});
-		t.field('payment', { type: Stk });
+		t.field('payment', {
+			type: Stk,
+			async resolve(parent, _args, ctx) {
+				return await ctx.prisma.order
+					.findUnique({
+						where: {
+							id: parent.id,
+						},
+					})
+					.payment();
+			},
+		});
 		t.list.field('products', {
 			type: Product,
 			async resolve(parent, _args, ctx) {
@@ -49,9 +61,9 @@ export const Order = objectType({
 	},
 });
 
-const OrderStatus = enumType({
+const PaymentStatus = enumType({
 	name: 'OrderStatus',
-	members: ['PENDING', 'PAID', 'SHIPPED'],
+	members: ['PENDING', 'PAID', 'FAILED'],
 });
 
 export const OrdersQuery = extendType({

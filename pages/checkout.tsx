@@ -40,6 +40,9 @@ const orderQuery = gql`
 		order(id: $id) {
 			status
 			id
+			payment {
+				resultdesc
+			}
 		}
 	}
 `;
@@ -136,6 +139,12 @@ const Checkout = () => {
 				orderNumber: statusQuery.order.id,
 			},
 		});
+	}
+
+	if (statusQuery?.order?.status === 'FAILED') {
+		stopPolling();
+		console.log('result', statusQuery.order.payment.resultdesc);
+		router.push('/cancelled');
 	}
 
 	return (

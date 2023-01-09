@@ -46,6 +46,7 @@ type Order {
   cart_total: Int
   checkoutrequestid: String
   id: String
+  is_shipped: Boolean
   mpesa_number: String
   payment: Stk
   products: [Product]
@@ -55,9 +56,9 @@ type Order {
 }
 
 enum OrderStatus {
+  FAILED
   PAID
   PENDING
-  SHIPPED
 }
 
 type PageInfo {
@@ -99,7 +100,7 @@ type Stk {
   id: String
   merchantrequestid: String
   order: Order
-  resultcode: String
+  resultcode: Int
   resultdesc: String
 }
 

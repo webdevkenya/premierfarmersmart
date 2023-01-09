@@ -69,26 +69,27 @@ model Location {
 }
 
 model Order {
-  id                String    @id @default(uuid())
-  index             Int       @default(autoincrement())
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  id                String        @id @default(uuid())
+  index             Int           @default(autoincrement())
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
   products          Product[]
-  status            Status    @default(PENDING)
+  status            PaymentStatus @default(PENDING)
+  is_shipped        Boolean       @default(false)
   cart_total        Int
   amount_payable    Int
   shipping_cost     Int
   mpesa_number      String
-  User              User?     @relation(fields: [userId], references: [id])
+  User              User?         @relation(fields: [userId], references: [id])
   userId            String?
   payment           Stk?
-  checkoutrequestid String    @unique
+  checkoutrequestid String        @unique
 }
 
-enum Status {
+enum PaymentStatus {
   PENDING
   PAID
-  SHIPPED
+  FAILED
 }
 
 model Stk {
@@ -98,7 +99,7 @@ model Stk {
   updatedAt         DateTime           @updatedAt
   merchantrequestid String
   checkoutrequestid String             @unique
-  resultcode        String
+  resultcode        Int
   resultdesc        String
   callbackmetadata  CallbackMetaData[]
   Order             Order              @relation(fields: [orderId], references: [id])

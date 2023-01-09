@@ -7,7 +7,7 @@ export const Stk = objectType({
 		t.string('id');
 		t.string('merchantrequestid');
 		t.string('checkoutrequestid');
-		t.string('resultcode');
+		t.int('resultcode');
 		t.string('resultdesc');
 		t.field('order', {
 			type: Order,
