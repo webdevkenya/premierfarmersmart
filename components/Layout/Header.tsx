@@ -9,6 +9,7 @@ import {
 	XMarkIcon,
 	ShoppingCartIcon,
 	ArrowLeftOnRectangleIcon,
+	UserIcon,
 } from '@heroicons/react/24/outline';
 
 const navigation = [
@@ -27,10 +28,10 @@ export default function Header() {
 
 	if (error) return <div>{error.message}</div>;
 	return (
-		<Disclosure as="nav" className="border border-gray-200 py-4">
+		<Disclosure as="nav" className="border shadow ">
 			{({ open }) => (
 				<>
-					<div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
+					<div className="mx-auto max-w-8xl px-2 sm:px-6 lg:px-8">
 						<div className="relative flex h-16 items-center justify-between">
 							<div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
 								{/* Mobile menu button*/}
@@ -65,7 +66,7 @@ export default function Header() {
 											width={37}
 										/>
 										<Image
-											className="hidden h-12 w-auto md:block"
+											className="hidden h-11 w-auto md:block"
 											src="/premierfarmersmart-nav-logo.svg"
 											alt="logo"
 											width={309}
@@ -98,35 +99,34 @@ export default function Header() {
 								</div>
 							</div>
 							<div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-								<button
-									type="button"
+								<Link
 									className="relative p-1 text-gray-300 hover:text-gray-700"
+									href="/cart"
 								>
 									<span className="sr-only">View cart</span>
 									<ShoppingCartIcon
 										className="h-6 w-6 sm:h-8 sm:w-8"
 										aria-hidden="true"
 									/>
-									<div className="absolute inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-gray-900  rounded-full -top-2 -right-2">
+									<div className="absolute inline-flex items-center justify-center w-6 h-6 text-sm font-bold  rounded-full -top-2 -right-2">
 										{count}
 									</div>
-								</button>
+								</Link>
 								{user ? (
 									// Profile dropdown
-									<Menu
-										as="div"
-										className="relative ml-3 sm:ml-8"
-									>
+									<Menu as="div" className="relative ml-3 ">
 										<div>
-											<Menu.Button className="flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
+											<Menu.Button className="flex items-center text-xs text-gray-300 hover:text-gray-700">
 												<span className="sr-only">
 													Open user menu
 												</span>
-												<img
-													className="h-6 w-6 sm:h-8 sm:w-8 rounded-full"
-													alt="profile"
-													src={user.picture}
+												<UserIcon
+													className="h-6 w-6 sm:h-8 sm:w-8"
+													aria-hidden="true"
 												/>
+												<p className="ml-2">
+													{user.name}
+												</p>
 											</Menu.Button>
 										</div>
 										<Transition
@@ -142,7 +142,7 @@ export default function Header() {
 												<Menu.Item>
 													{({ active }) => (
 														<Link
-															href="/profile"
+															href="/profile/account"
 															className={classNames(
 																active
 																	? 'bg-gray-100'
@@ -189,7 +189,7 @@ export default function Header() {
 										</Link>
 										<Link
 											href="/api/auth/login"
-											className="hidden sm:block sm:ml-8 px-3 py-2 rounded-md text-sm font-medium rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+											className="hidden sm:block sm:ml-8 px-3 py-2  text-sm font-medium rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-gray-400"
 										>
 											Sign In
 										</Link>
