@@ -25,11 +25,11 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
 		<UserProvider>
 			<ShoppingCartProvider>
 				<ModalProvider>
-					{getLayout(
-						<ApolloProvider client={apolloClient}>
+					<ApolloProvider client={apolloClient}>
+						{getLayout(
 							<Component {...pageProps} />
-						</ApolloProvider>
-					)}
+						)}
+					</ApolloProvider>
 				</ModalProvider>
 			</ShoppingCartProvider>
 		</UserProvider>

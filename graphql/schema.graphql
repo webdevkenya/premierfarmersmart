@@ -13,6 +13,11 @@ type Address {
   user: User
 }
 
+type Category {
+  category: String
+  id: String
+}
+
 type County {
   county: String
   towns: [Town]
@@ -79,8 +84,10 @@ type Product {
 
 type Query {
   addresses: [Address]!
+  categories: [Category]!
   counties: [County]!
   getAllUsers: [User]!
+  getProductsByCategory(after: String, category: String, first: Int): Response
   order(id: String!): Order!
   products(after: String, first: Int): Response
 }

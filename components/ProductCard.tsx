@@ -57,21 +57,24 @@ const ProductCard = ({ product }) => {
 				height="300"
 				src={image}
 			/>
-			<h3 className="text-lg font-bold text-gray-800 mb-4">{name}</h3>
-			<p className="text-gray-600 mb-4">{`KES ${price} / ${price_type}`}</p>
-			<div className="flex  items-center">
-				<button
-					onClick={handleFavorite}
-					className="text-xs font-semibold rounded-md px-4 py-1 leading-none border border-2 border-gray-800 text-gray-800 hover:border-gray-900 text-gray-900"
-				>
-					<StarIcon className="block h-4 w-4" />
-				</button>
-				<button
-					onClick={handleBuy}
-					className="flex-1 ml-1 text-xs font-semibold rounded-md px-4 py-2 leading-none bg-gray-800 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-gray-200"
-				>
-					Buy
-				</button>
+			<div className='flex flex-col items-center justify-between grow text-ellipsis'>
+
+				<h3 className="text-lg font-bold text-gray-800 mb-4 text-center">{name}</h3>
+				<p className="text-gray-600 mb-4">{`KES ${price} / ${price_type}`}</p>
+				<div className="flex  items-center">
+					<button
+						onClick={handleFavorite}
+						className="text-xs font-semibold rounded-md px-4 py-1 leading-none border border-2 border-gray-800 text-gray-800 hover:border-gray-900 text-gray-900"
+					>
+						<StarIcon className="block h-4 w-4" />
+					</button>
+					<button
+						onClick={handleBuy}
+						className="flex-1 ml-1 text-xs font-semibold rounded-md px-4 py-2 leading-none bg-gray-800 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-gray-200"
+					>
+						Buy
+					</button>
+				</div>
 			</div>
 		</li>
 	);

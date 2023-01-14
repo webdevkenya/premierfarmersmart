@@ -4,6 +4,7 @@ import { useUser } from '@auth0/nextjs-auth0/client';
 import { useShoppingCart } from '../../contexts/ShoppingCartContext';
 import Image from 'next/image';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
+import { gql, useQuery } from '@apollo/client';
 import {
 	Bars3Icon,
 	XMarkIcon,
@@ -11,10 +12,11 @@ import {
 	ArrowLeftOnRectangleIcon,
 	UserIcon,
 } from '@heroicons/react/24/outline';
+import { Popover } from '@headlessui/react'
+
 
 const navigation = [
 	{ name: 'Home', href: '/', current: true },
-	{ name: 'Products', href: '/products', current: false },
 	{ name: 'Contacts', href: '#', current: false },
 ];
 
@@ -22,10 +24,22 @@ function classNames(...classes) {
 	return classes.filter(Boolean).join(' ');
 }
 
+const CategoriesQuery = gql`
+query CategoriesQuery {
+  categories {
+    category
+    id
+  }
+}
+`;
+
+
 export default function Header() {
+	const { data, loading } = useQuery(CategoriesQuery)
 	const { user, error } = useUser();
 	const { count } = useShoppingCart();
 
+	// if (loading) return <p>loading...</p>
 	if (error) return <div>{error.message}</div>;
 	return (
 		<Disclosure as="nav" className="border shadow ">
@@ -53,13 +67,13 @@ export default function Header() {
 								</Disclosure.Button>
 							</div>
 							<div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-								<div className="flex flex-shrink-0 items-center">
+								<div className="my-auto">
 									<Link
-										className="flex title-font font-medium items-center text-gray-900 mb-4 md:mb-0"
+										className="title-font font-medium text-gray-900 mb-4 md:mb-0"
 										href="/"
 									>
 										<Image
-											className="block h-16 sm:h-14 w-auto md:hidden"
+											className="block h-14 w-auto md:hidden"
 											src="/premierfarmersmart-mobile-logo.svg"
 											alt="logo"
 											height={57}
@@ -74,10 +88,10 @@ export default function Header() {
 										/>
 									</Link>
 								</div>
-								<div className="hidden sm:ml-6 sm:block">
+								<div className="hidden sm:ml-8 my-auto sm:block">
 									<div className="flex space-x-4">
 										{navigation.map((item) => (
-											<a
+											<Link
 												key={item.name}
 												href={item.href}
 												className={classNames(
@@ -93,9 +107,47 @@ export default function Header() {
 												}
 											>
 												{item.name}
-											</a>
+											</Link>
 										))}
+										<Popover className="relative">
+											<Popover.Button className="text-gray-300 hover:text-gray-700
+												'px-3 py-2 rounded-md text-sm font-medium"
+											>Categories</Popover.Button>
+
+											<Transition
+												as={Fragment}
+												enter="transition ease-out duration-200"
+												enterFrom="opacity-0 translate-y-1"
+												enterTo="opacity-100 translate-y-0"
+												leave="transition ease-in duration-150"
+												leaveFrom="opacity-100 translate-y-0"
+												leaveTo="opacity-0 translate-y-1"
+											>
+												<Popover.Panel className="absolute left-1/2 z-10 mt-3 w-screen max-w-sm -translate-x-1/2 transform px-4 sm:px-0 lg:max-w-3xl">
+													<div className="overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
+														<div className="relative grid gap-8 bg-white p-7 lg:grid-cols-2">
+															{data?.categories.map(({ category, id }) => (
+																<a
+																	key={id}
+																	href={`/products/${encodeURIComponent(category)}`} className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus-visible:text-grray-900"
+																>
+
+																	<div className="ml-4">
+																		<p className="text-sm font-medium text-gray-900">
+																			{category}
+																		</p>
+
+																	</div>
+																</a>
+															))}
+														</div>
+
+													</div>
+												</Popover.Panel>
+											</Transition>
+										</Popover>
 									</div>
+
 								</div>
 							</div>
 							<div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
@@ -204,7 +256,7 @@ export default function Header() {
 							{navigation.map((item) => (
 								<Disclosure.Button
 									key={item.name}
-									as="a"
+									as={Link}
 									href={item.href}
 									className={classNames(
 										item.current
@@ -222,7 +274,8 @@ export default function Header() {
 						</div>
 					</Disclosure.Panel>
 				</>
-			)}
-		</Disclosure>
+			)
+			}
+		</Disclosure >
 	);
 }
