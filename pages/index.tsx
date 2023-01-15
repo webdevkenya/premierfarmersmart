@@ -17,7 +17,7 @@ export default function Home() {
 				<link rel="icon" href="/favicon.ico" />
 			</Head>
 			<main>
-				<Countdown releaseDate="2023-01-16" />
+				<Countdown releaseDate="2023-01-21" />
 			</main>
 		</>
 	);
