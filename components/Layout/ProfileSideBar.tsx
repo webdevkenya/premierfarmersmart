@@ -15,11 +15,11 @@ const ProfileSideBar = ({ children }) => {
 					<ul className="space-y-2">
 						<li>
 							<Link
-								href="/products"
+								href="/"
 								className="w-full flex items-center p-2 text-base font-normal text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
 							>
 								<ArrowSmallLeftIcon className="block h-6 w-6 mr-2" />
-								Back to Shop
+								Back Home
 							</Link>
 						</li>
 					</ul>

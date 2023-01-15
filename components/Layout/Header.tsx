@@ -45,7 +45,7 @@ export default function Header() {
 		<Disclosure as="nav" className="border shadow ">
 			{({ open }) => (
 				<>
-					<div className="mx-auto max-w-8xl px-2 sm:px-6 lg:px-8">
+					<div className="mx-auto max-w-[95%] px-2 ">
 						<div className="relative flex h-16 items-center justify-between">
 							<div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
 								{/* Mobile menu button*/}
@@ -241,7 +241,7 @@ export default function Header() {
 										</Link>
 										<Link
 											href="/api/auth/login"
-											className="hidden sm:block sm:ml-8 px-3 py-2  text-sm font-medium rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-gray-400"
+											className="hidden sm:block sm:ml-8 px-3 py-2  text-sm font-medium rounded-full bg-gray-300 p-1 text-gray-500 hover:text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500"
 										>
 											Sign In
 										</Link>
