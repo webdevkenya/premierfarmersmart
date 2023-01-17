@@ -53,8 +53,8 @@ const ProductCard = ({ product }) => {
 			<CldImage
 				//	className="w-48 h-48 rounded-full mb-4"
 				alt="Product"
-				width="300"
-				height="300"
+				width="200"
+				height="200"
 				src={image}
 			/>
 			<div className='flex flex-col items-center justify-between grow text-ellipsis'>

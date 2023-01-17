@@ -1,8 +1,22 @@
+import { Fragment, useState } from 'react'
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Menu, Transition } from '@headlessui/react'
+import { ChevronDownIcon, CheckBadgeIcon } from '@heroicons/react/24/outline'
+import { gql, useQuery } from '@apollo/client';
+
+const CategoriesQuery = gql`
+query CategoriesQuery {
+  categories {
+    category
+    id
+  }
+}
+`;
 
 export default function Home() {
+	const { data, loading } = useQuery(CategoriesQuery)
 
 	return (
 		<>
@@ -19,42 +33,83 @@ export default function Home() {
 				<link rel="icon" href="/favicon.ico" />
 			</Head>
 			<main className='mx-auto max-w-[95%]'>
-				<div className='flex rounded-lg px-8 pt-4 justify-between bg-green-900 my-8 '>
-					<div className='w-1/3 flex flex-col items-center justify-center space-y-8'>
+				<section className='flex flex-col sm:flex-row rounded-lg px-8 pt-4 justify-between bg-green-900 my-8 '>
+					<div className='w-full py-4 sm:w-1/3 flex flex-col items-center justify-center space-y-8'>
 
-						<h1 className='text-3xl font-bold tracking-tight sm:text-center lg:text-5xl xl:text-6xl text-white'>Fresh Online Grocery Shopping</h1>
-						<Link href="#" className="inline-block rounded-lg bg-orange-300 px-4 py-1.5 text-base font-semibold leading-7 text-green-900 shadow-sm ring-1 ring-orange-400 hover:bg-sky-700 hover:text-white hover:ring-sky-800">
-							Get started
-						</Link>
+						<h1 className='text-3xl font-bold tracking-tight text-center lg:text-5xl xl:text-6xl text-white'>Fresh Online Grocery Shopping</h1>
+						<Menu as="div" className="relative inline-block text-left">
+							<div>
+								<Menu.Button className="inline-flex w-full justify-center rounded-md bg-black bg-opacity-20 px-4 py-2 text-sm font-medium text-white hover:bg-opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75">
+									Select Category
+									<ChevronDownIcon
+										className="ml-2 -mr-1 h-5 w-5 text-gray-200 hover:text-gray-100"
+										aria-hidden="true"
+									/>
+								</Menu.Button>
+							</div>
+							<Transition
+								as={Fragment}
+								enter="transition ease-out duration-100"
+								enterFrom="transform opacity-0 scale-95"
+								enterTo="transform opacity-100 scale-100"
+								leave="transition ease-in duration-75"
+								leaveFrom="transform opacity-100 scale-100"
+								leaveTo="transform opacity-0 scale-95"
+							>
+								<Menu.Items className="absolute -right-[25%] mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+									<div className="px-1 py-1 ">
+										{
+											data?.categories.map(({ category, id }) => (
+												<Menu.Item key={id}>
+													{({ active }) => (
+														<Link
+															href={`/products/${encodeURIComponent(category)}`}
+															className={`${active ? 'bg-orange-300' : 'text-gray-900'
+																} group flex w-full items-center rounded-md px-2 py-2 text-sm`}
+														>
+															<CheckBadgeIcon
+																className="mr-2 h-5 w-5"
+																aria-hidden="true"
+															/>
+
+															{category}
+														</Link>
+													)}
+												</Menu.Item>
+											))
+										}
+									</div>
+								</Menu.Items>
+							</Transition>
+						</Menu>
 					</div>
 					<Image
-						className="hidden h-auto w-2/3 md:block "
+						className="h-auto w-full order-first sm:order-none sm:w-2/3"
 						src="/landing.svg"
 						alt="illustration"
 						width={1793}
 						height={912}
 					/>
 
-				</div>
-				<div className='flex justify-around items-center py-4'>
+				</section>
+				<section className='flex justify-around items-center py-4'>
 					<div className='flex flex-col items-center font-bold space-y-4'>
-						<span className='text-4xl'>100%</span>
+						<span className='text-2xl sm:text-4xl'>100%</span>
 						<span className='text-gray-400'>Fresh</span>
 					</div>
 					<div className='flex flex-col items-center font-bold space-y-4'>
-						<span className='text-4xl'>24/7</span>
+						<span className='text-2xl sm:text-4xl'>24/7</span>
 						<span className='text-gray-400'>Delivery</span>
 					</div>
 					<div className='flex flex-col items-center font-bold space-y-4'>
-						<span className='text-4xl'>100%</span>
+						<span className='text-2xl sm:text-4xl'>100%</span>
 						<span className='text-gray-400'>Reliable</span>
 					</div>
 
-				</div>
-				{/* <div>
-					<h2>Shop by Category</h2>
-				</div> */}
+				</section>
 			</main>
 		</>
 	);
 }
+
+

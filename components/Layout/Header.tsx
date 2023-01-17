@@ -11,6 +11,7 @@ import {
 	ShoppingCartIcon,
 	ArrowLeftOnRectangleIcon,
 	UserIcon,
+	ChevronDownIcon
 } from '@heroicons/react/24/outline';
 import { Popover } from '@headlessui/react'
 
@@ -37,6 +38,7 @@ query CategoriesQuery {
 export default function Header() {
 	const { data, loading } = useQuery(CategoriesQuery)
 	const { user, error } = useUser();
+
 	const { count } = useShoppingCart();
 
 	// if (loading) return <p>loading...</p>
@@ -110,10 +112,18 @@ export default function Header() {
 											</Link>
 										))}
 										<Popover className="relative">
-											<Popover.Button className="text-gray-300 hover:text-gray-700
-												'px-3 py-2 rounded-md text-sm font-medium"
-											>Categories</Popover.Button>
 
+											<Popover.Button className="
+												px-3 py-2 rounded-md text-sm font-medium"
+											>
+												<div className='text-gray-300 hover:text-gray-700 flex'>
+													<span>Categories</span>
+													<ChevronDownIcon
+														className="ml-2 h-5 w-5"
+														aria-hidden="true"
+													/>
+												</div>
+											</Popover.Button>
 											<Transition
 												as={Fragment}
 												enter="transition ease-out duration-200"
@@ -127,7 +137,7 @@ export default function Header() {
 													<div className="overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
 														<div className="relative grid gap-8 bg-white p-7 lg:grid-cols-2">
 															{data?.categories.map(({ category, id }) => (
-																<a
+																<Link
 																	key={id}
 																	href={`/products/${encodeURIComponent(category)}`} className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus-visible:text-grray-900"
 																>
@@ -138,7 +148,7 @@ export default function Header() {
 																		</p>
 
 																	</div>
-																</a>
+																</Link>
 															))}
 														</div>
 
@@ -167,19 +177,20 @@ export default function Header() {
 								{user ? (
 									// Profile dropdown
 									<Menu as="div" className="relative ml-3 ">
-										<div>
-											<Menu.Button className="flex items-center text-xs text-gray-300 hover:text-gray-700">
+										<div className='text-gray-300 hover:text-gray-700'>
+											<Menu.Button className=" mx-auto block">
 												<span className="sr-only">
 													Open user menu
 												</span>
 												<UserIcon
-													className="h-6 w-6 sm:h-8 sm:w-8"
+													className="h-4 w-4 sm:h-8 sm:w-8"
 													aria-hidden="true"
 												/>
-												<p className="ml-2">
-													{user.name}
-												</p>
+
 											</Menu.Button>
+											<p className="text-xs truncate font-bold">
+												{user?.given_name as string ?? 'User'}
+											</p>
 										</div>
 										<Transition
 											as={Fragment}
@@ -231,13 +242,12 @@ export default function Header() {
 											href="/api/auth/login"
 											className="block sm:hidden ml-3 p-1 text-gray-300 hover:text-gray-700"
 										>
-											<span className="sr-only">
-												Sign In
-											</span>
+
 											<ArrowLeftOnRectangleIcon
-												className="h-6 w-6 sm:h-8 sm:w-8"
+												className="h-4 w-4 sm:h-8 sm:w-8 mx-auto"
 												aria-hidden="true"
 											/>
+											<span className='text-xs'>Sign In</span>
 										</Link>
 										<Link
 											href="/api/auth/login"

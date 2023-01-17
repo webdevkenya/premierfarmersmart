@@ -148,9 +148,9 @@ const Checkout = () => {
 	}
 
 	return (
-		<div className="container mx-auto py-8">
+		<div className="max-w-[95%] mx-auto">
 			<Toaster />
-			<h1 className="text-3xl font-bold text-gray-900 mb-4">Checkout</h1>
+			<h1 className="text-3xl font-bold text-gray-900 mb-4 p-4">Checkout</h1>
 			<div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
 				<AddressBook />
 				<OrderSummary />
