@@ -13,6 +13,22 @@ type Address {
   user: User
 }
 
+type Cart {
+  id: String
+  items: [CartItem]
+  sessionId: String
+  user: User
+}
+
+type CartItem {
+  cartId: String
+  id: String
+  product: Product
+  productTotal: Int
+  quantity: Int
+  sessionId: String
+}
+
 type Category {
   category: String
   id: String
@@ -39,11 +55,15 @@ type Location {
 
 type Mutation {
   addFavorite(id: String!): Product!
+  addToCart(id: String!): Cart!
   createAddress(firstName: String!, lastName: String!, location: String!, phoneNumber: String!, specificAddress: String!): Address!
   createOrder(amountPayable: Int!, cartTotal: Int!, checkoutrequestid: String!, mpesaNumber: String!, products: [String]!, shippingCost: Int!): Order!
   createProduct(category: String!, image: String!, name: String!, price: Int!, price_type: String!, stock: Int!): Product!
+  decreaseQuantity(id: String!): CartItem
   deleteAddress(id: String): Address!
   deleteFavorite(id: String): Product!
+  increaseQuantity(id: String!): CartItem!
+  removeFromCart(id: String!): CartItem
 }
 
 type Order {
@@ -84,6 +104,9 @@ type Product {
 
 type Query {
   addresses: [Address]!
+  cart: Cart!
+  cartCount: Int!
+  cartTotal: Int!
   categories: [Category]!
   counties: [County]!
   getAllUsers: [User]!

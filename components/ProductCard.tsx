@@ -3,6 +3,8 @@ import toast from 'react-hot-toast';
 import { useShoppingCart } from '../contexts/ShoppingCartContext';
 import { CldImage } from 'next-cloudinary';
 import { StarIcon } from '@heroicons/react/24/outline';
+import { CartCountQuery } from './Layout/Header';
+import { GetCartTotalQuery } from '../pages/cart';
 
 const AddFavoriteMutation = gql`
 	mutation ($id: String!) {
@@ -17,11 +19,26 @@ const AddFavoriteMutation = gql`
 	}
 `;
 
+const AddToCartMutation = gql`
+	mutation AddToCart($id: String!) {
+		addToCart(id: $id) {
+			id
+			items {
+				id
+			}
+		}
+	}
+`;
+
 const ProductCard = ({ product }) => {
 	const { image, name, price, id, price_type } = product;
-	const { addItem } = useShoppingCart();
+	// const { addItem } = useShoppingCart();
 
 	const [addFavorite, { error }] = useMutation(AddFavoriteMutation);
+	const [AddToCart, { error: errorC }] = useMutation(AddToCartMutation, {
+		refetchQueries: [{ query: CartCountQuery }, 'CartCount', { query: GetCartTotalQuery }, 'GetCartTotal']
+	});
+
 
 	const handleFavorite = () => {
 		console.log(id);
@@ -40,9 +57,17 @@ const ProductCard = ({ product }) => {
 	};
 
 	const handleBuy = async () => {
+		const variables = {
+			id,
+		};
 		try {
-			await addItem(product);
-			toast.success('Product added to cart successfully!🎉');
+			// await addItem(product);
+			// toast.success('Product added to cart successfully!🎉');
+			toast.promise(AddToCart({ variables }), {
+				loading: 'Adding product to cart ..',
+				success: 'Product added to cart successfully!🎉',
+				error: `Something went wrong 😥 Please try again -  ${errorC}`,
+			});
 		} catch (error) {
 			toast.error(error.message);
 		}

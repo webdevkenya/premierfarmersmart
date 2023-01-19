@@ -1,16 +1,84 @@
 import Link from 'next/link';
 import { useShoppingCart } from '../contexts/ShoppingCartContext';
 import { CldImage } from 'next-cloudinary';
+import { gql, useQuery, useMutation } from '@apollo/client';
+import { CartCountQuery } from '../components/Layout/Header';
+
+const CartQuery = gql`
+	query CartQuery {
+		cart{
+			id
+			items {
+				product{
+				name
+				image,
+				price,
+				price_type,
+				}
+				productTotal
+				quantity
+				id
+			}
+		}
+	}
+`;
+
+
+export const GetCartTotalQuery = gql`
+	query GetCartTotal  {
+		cartTotal
+	}
+`;
+
+const IncreaseQuantityMutation = gql`
+	mutation IncreaseQuantity($id: String!) {
+		increaseQuantity(id: $id) {
+			id
+			quantity
+			productTotal
+		}
+	}
+`;
+
+const DecreaseQuantityMutation = gql`
+	mutation DecreaseQuantity($id: String!) {
+		decreaseQuantity(id: $id) {
+			id
+			quantity
+			productTotal
+		}
+	}
+`;
+
+const RemoveFromCartMutation = gql`
+	mutation RemoveFromCart($id: String!) {
+		removeFromCart(id: $id) {
+			id
+		}
+	}
+`;
 
 const Cart = () => {
-	const {
-		items,
-		removeItem,
-		getTotal,
-		increaseQuantity,
-		decreaseQuantity,
-		isEmpty,
-	} = useShoppingCart();
+	// console.log('cart', cart);
+
+	// const {
+	// 	items,
+	// 	removeItem,
+	// 	getTotal,
+	// 	increaseQuantity,
+	// 	decreaseQuantity,
+	// 	isEmpty,
+	// } = useShoppingCart();
+
+	const { data, loading, error } = useQuery(CartQuery)
+	const { data: cartTotalData, } = useQuery(GetCartTotalQuery)
+	const [increaseQuantity] = useMutation(IncreaseQuantityMutation)
+	const [decreaseQuantity] = useMutation(DecreaseQuantityMutation)
+	const [removeFromCart] = useMutation(RemoveFromCartMutation)
+
+
+	if (loading) return <p>loading...</p>
+	if (error) return <p>{error?.message}</p>
 
 	return (
 		<div className="relative h-[50%] bg-white rounded-lg shadow-lg">
@@ -18,7 +86,7 @@ const Cart = () => {
 				<h3 className="text-lg leading-6 font-medium text-gray-900">
 					Shopping Cart
 				</h3>
-				{isEmpty ? (
+				{data.cart?.items?.length === 0 ? (
 					<p className="mt-1 max-w-2xl text-sm leading-5 text-gray-500">
 						Your shopping cart is empty.
 					</p>
@@ -36,15 +104,16 @@ const Cart = () => {
 								</tr>
 							</thead>
 							<tbody>
-								{items.map(
+								{data.cart?.items?.map(
 									({
 										id,
-										name,
-										image,
-										price,
-										price_type,
+										product: { name,
+											image,
+											price,
+											price_type,
+										},
 										quantity,
-										productTotal,
+										productTotal
 									}) => (
 										<tr key={id}>
 											<td className="text-left">
@@ -72,7 +141,10 @@ const Cart = () => {
 												<div className="flex justify-around">
 													<button
 														onClick={() =>
-															decreaseQuantity(id)
+															decreaseQuantity({
+																variables: { id }, refetchQueries: [{ query: GetCartTotalQuery }, 'GetCartTotal'],
+
+															})
 														}
 														type="button"
 														className="text-sm leading-5 font-medium text-gray-500 hover:text-gray-700 focus:outline-none focus:underline"
@@ -82,7 +154,11 @@ const Cart = () => {
 													{quantity}
 													<button
 														onClick={() =>
-															increaseQuantity(id)
+															increaseQuantity({
+																variables: { id }, refetchQueries: [{ query: GetCartTotalQuery }, 'GetCartTotal'],
+
+															}
+															)
 														}
 														type="button"
 														className="text-sm leading-5 font-medium text-gray-500 hover:text-gray-700 focus:outline-none focus:underline"
@@ -100,7 +176,22 @@ const Cart = () => {
 											<td className="text-right">
 												<button
 													onClick={() =>
-														removeItem(id)
+														removeFromCart({
+															variables: { id },
+															refetchQueries: [{ query: GetCartTotalQuery }, 'GetCartTotal', { query: CartCountQuery }, 'CartCount'],
+															update(cache, { data }) {
+																//@ts-ignore
+																const { cart } = cache.readQuery({
+																	query: CartQuery
+																})
+																cache.writeQuery({
+																	query: CartQuery,
+																	data: {
+																		cart: { ...cart, items: cart.items.filter(item => item.id !== data.removeFromCart.id) }
+																	}
+																})
+															}
+														})
 													}
 													type="button"
 													className="text-sm leading-5 font-medium text-red-700 hover:text-red-800 focus:outline-none focus:underline"
@@ -115,7 +206,7 @@ const Cart = () => {
 						</table>
 						<div className="bg-gray-100 p-4 mt-4">
 							<p className="text-right font-bold">
-								{`Shopping Total : KES ${getTotal()}`}
+								{`Shopping Total : KES ${cartTotalData?.cartTotal}`}
 							</p>
 							<p className="text-right text-gray-600">
 								Shipping fees not included
@@ -137,3 +228,36 @@ const Cart = () => {
 };
 
 export default Cart;
+
+// export const getServerSideProps = async ({ req, res }) => {
+// 	// const session = req.cookies.sessionId
+// 	//	has session f46a9db1-59e2-4b94-9d253519ea940ce1
+// 	const cart = await prisma.cart.findUnique({
+// 		where: {
+// 			sessionId: 'f46a9db1-59e2-4b94-9d253519ea940ce1',
+// 		}, select: {
+// 			items: {
+// 				select: {
+// 					id: true,
+// 					quantity: true,
+// 					product: {
+// 						select: {
+// 							id: true,
+// 							image: true,
+// 							name: true,
+// 							price: true
+// 						}
+// 					}
+// 				}
+// 			}
+// 		}
+// 	});
+
+// 	console.log('cart', cart);
+
+
+// 	return {
+// 		props: { cart },
+// 	};
+// };
+

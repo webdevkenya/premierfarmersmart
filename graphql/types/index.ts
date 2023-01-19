@@ -4,3 +4,5 @@ export * from './Address';
 export * from './Location';
 export * from './Order';
 export * from './Stk';
+export * from './Cart';
+

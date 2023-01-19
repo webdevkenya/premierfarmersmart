@@ -151,8 +151,8 @@ export const ProductsQuery = extendType({
 				if (args.after) {
 					// check if there is a cursor as the argument
 					queryResults = await ctx.prisma.product.findMany({
-						where:{
-							category:args.category
+						where: {
+							category: args.category
 						},
 						take: args.first, // the number of items to return from the database
 						skip: 1, // skip the cursor
@@ -164,7 +164,7 @@ export const ProductsQuery = extendType({
 					// if no cursor, this means that this is the first request
 					//  and we will return the first items in the database
 					queryResults = await ctx.prisma.product.findMany({
-						where:{
+						where: {
 							category: args.category
 						},
 						take: args.first,
@@ -181,8 +181,8 @@ export const ProductsQuery = extendType({
 					// query after the cursor to check if we have nextPage
 					const secondQueryResults =
 						await ctx.prisma.product.findMany({
-							where:{
-category: args.category
+							where: {
+								category: args.category
 							},
 							take: args.first,
 							cursor: {
@@ -222,9 +222,9 @@ category: args.category
 			type: Category,
 			async resolve(_parent, _args, ctx) {
 				return await ctx.prisma.product.findMany({
-					select: { category: true,id:true },
+					select: { category: true, id: true },
 					distinct: 'category',
-				});	
+				});
 			},
 		});
 	},

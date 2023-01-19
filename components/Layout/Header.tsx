@@ -35,11 +35,18 @@ query CategoriesQuery {
 `;
 
 
+export const CartCountQuery = gql`
+	query CartCount {
+		cartCount
+	}
+`;
+
 export default function Header() {
 	const { data, loading } = useQuery(CategoriesQuery)
+	const { data: cartCountData } = useQuery(CartCountQuery)
 	const { user, error } = useUser();
 
-	const { count } = useShoppingCart();
+	//const { count } = useShoppingCart();
 
 	// if (loading) return <p>loading...</p>
 	if (error) return <div>{error.message}</div>;
@@ -171,7 +178,7 @@ export default function Header() {
 										aria-hidden="true"
 									/>
 									<div className="absolute inline-flex items-center justify-center w-6 h-6 text-sm font-bold  rounded-full -top-2 -right-2">
-										{count}
+										{cartCountData?.cartCount}
 									</div>
 								</Link>
 								{user ? (
