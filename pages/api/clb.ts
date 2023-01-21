@@ -45,43 +45,37 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
 		console.log('ResultDesc', ResultDesc);
 
-		const order = await prisma.order.findUnique({
-			where: { checkoutrequestid: CheckoutRequestID },
+		const stkreq = await prisma.stkRequest.findUnique({
+			where: { CheckoutRequestID },
 		});
-		if (!order) {
-			console.log('order not found');
-			return res.status(404).json({ error: 'Order not found' });
+		if (!stkreq) {
+			console.log('stk request not found');
+			return res.status(404).json({ error: 'Stk request not found' });
 		}
 
 		if (+ResultCode !== 0) {
 			console.log('payment fail : result code not zero!');
-			const newStk = {
-				merchantrequestid: MerchantRequestID,
-				checkoutrequestid: CheckoutRequestID,
-				resultcode: +ResultCode,
-				resultdesc: ResultDesc,
-				orderId: order.id,
-			};
 
-			const stk = await prisma.stk.create({
-				data: newStk,
+			const stkResponse = await prisma.stkResponse.create({
+				data: {
+					MerchantRequestID,
+					CheckoutRequestID,
+					ResultCode: +ResultCode,
+					ResultDesc,
+					StkRequestId: stkreq.id
+				}
 			});
 
-			if (!stk) {
-				console.log('error creating new stk entry');
+			if (!stkResponse) {
+				console.log('error creating new stk response entry');
 				throw new Error('an error occurred in the payment process');
 			}
-			const update = {
-				status: 'FAILED',
-			};
-			const updatedOrder = await prisma.order.update({
-				where: { checkoutrequestid: CheckoutRequestID },
-				data: update,
-			});
-			if (!updatedOrder) {
-				console.log('error updating order');
-				throw new Error('an error occurred in the payment process');
-			}
+			await prisma.stkRequest.update({
+				where: { CheckoutRequestID },
+				data: {
+					status: 'FAILED'
+				}
+			})
 			return res.status(200).end();
 		}
 
@@ -93,47 +87,107 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 		const amount = Item.find(({ Name }) => Name === 'Amount');
 		console.log('amount', amount);
 
-		// if (order.amount_payable !== parseInt(amount.Value)) {
+
+		//get amount payable
+		const cart = await prisma.cart.findUnique({
+			where: { sessionId: stkreq.sessionId },
+			select: {
+				items: {
+					select: {
+						quantity: true,
+						product: {
+							select: {
+								id: true,
+								price: true
+							}
+						}
+					}
+				}
+			}
+		})
+		if (!cart) {
+			console.log('cart not found');
+			throw new Error('an error occurred in the payment process');
+		}
+		const cartTotal = cart.items.reduce((acc, item) => acc + (item.quantity * item.product.price), 0)
+
+		const address = await prisma.address.findUnique({
+			where: { id: stkreq.shippingAddressId }, select: {
+				Location: {
+					select: {
+						shipping: true
+					}
+				}
+			}
+		})
+
+		if (!address) {
+			console.log('shipping address not found');
+			throw new Error('an error occurred in the payment process');
+		}
+
+		const shipping = address.Location.shipping
+		const amountPayable = cartTotal + shipping
+		console.log(`amountPayable = ${cartTotal} + ${shipping} = ${amountPayable}`);
+
+		// if (amountPayable !== parseInt(amount.Value)) {
 		// 	console.log('payment amount is incorrect');
 		// 	return res
 		// 		.status(500)
 		// 		.json({ error: 'Payment amount is incorrect' });
 		// }
 
-		const newStk = {
-			merchantrequestid: MerchantRequestID,
-			checkoutrequestid: CheckoutRequestID,
-			resultcode: +ResultCode,
-			resultdesc: ResultDesc,
-			callbackmetadata: {
-				create: Item.map((item) => ({
-					name: item.Name,
-					value: String(item?.Value ?? ''),
-				})),
+
+		const stkResponse = await prisma.stkResponse.create({
+			data: {
+				CheckoutRequestID,
+				MerchantRequestID,
+				ResultCode: +ResultCode,
+				ResultDesc,
+				StkRequestId: stkreq.id,
+				CallbackMetadata: {
+					create: Item.map((item) => ({
+						name: item.Name,
+						value: String(item?.Value ?? ''),
+					})
+					)
+				}
 			},
-			orderId: order.id,
-		};
-
-		const stk = await prisma.stk.create({
-			data: newStk,
 		});
 
-		if (!stk) {
-			console.log('error creating new stk entry');
+		if (!stkResponse) {
+			console.log('error creating new stk response entry');
 			throw new Error('an error occurred in the payment process');
 		}
-		const update = {
-			status: 'PAID',
-		};
-		const updatedOrder = await prisma.order.update({
-			where: { checkoutrequestid: CheckoutRequestID },
-			data: update,
+
+
+		const order = await prisma.order.create({
+			data: {
+				userId: stkreq.userId,
+				amountPaid: parseInt(amount.Value),
+				amountPayable,
+				shippingAddressId: stkreq.shippingAddressId,
+				mpesaNumber: stkreq.phone,
+				stkResponseId: stkResponse.id,
+				items: {
+					create: cart.items.map(({ quantity, product }) => ({
+						productId: product.id,
+						quantity,
+					}))
+				},
+			},
 		});
 
-		if (!updatedOrder) {
-			console.log('error updating order');
+		if (!order) {
+			console.log('error creating order');
 			throw new Error('an error occurred in the payment process');
 		}
+		await prisma.stkRequest.update({
+			where: { CheckoutRequestID },
+			data: {
+				status: 'SUCCESS'
+			}
+		})
 
 		res.status(200).end();
 	} catch (error) {

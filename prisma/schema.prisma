@@ -8,19 +8,19 @@ generator client {
 }
 
 model Product {
-  id         String     @id @default(uuid())
-  index      Int        @default(autoincrement())
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  name       String     @unique
+  id         String      @id @default(uuid())
+  index      Int         @default(autoincrement())
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  name       String      @unique
   price      Int
   price_type String
   category   String
   stock      Int
   image      String
   users      User[]
-  orders     Order[]
   CartItem   CartItem[]
+  OrderItem  OrderItem[]
 }
 
 model Cart {
@@ -46,28 +46,30 @@ model CartItem {
 }
 
 model Session {
-  id        String   @id @default(uuid())
-  sessionId String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
-  user      User?    @relation(fields: [userId], references: [id])
-  userId    String?  @unique
-  cart      Cart?
-  cartId    String?
+  id         String       @id @default(uuid())
+  sessionId  String       @unique
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @default(now())
+  user       User?        @relation(fields: [userId], references: [id])
+  userId     String?      @unique
+  cart       Cart?
+  cartId     String?
+  StkRequest StkRequest[]
 }
 
 model User {
-  id        String    @id @default(uuid())
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  role      Role      @default(USER)
-  email     String    @unique
-  image     String?
-  favorites Product[]
-  addresses Address[]
-  orders    Order[]
-  cart      Cart?
-  session   Session?
+  id         String       @id @default(uuid())
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  role       Role         @default(USER)
+  email      String       @unique
+  image      String?
+  favorites  Product[]
+  addresses  Address[]
+  orders     Order[]
+  cart       Cart?
+  session    Session?
+  StkRequest StkRequest[]
 }
 
 enum Role {
@@ -76,19 +78,21 @@ enum Role {
 }
 
 model Address {
-  id                     String   @id @default(uuid())
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
+  id                     String       @id @default(uuid())
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
   first_name             String
   last_name              String
   mobile_phone_number    String
   alternate_phone_number String?
   specific_address       String
-  is_default             Boolean  @default(false)
-  User                   User     @relation(fields: [userId], references: [id])
+  is_default             Boolean      @default(false)
+  User                   User         @relation(fields: [userId], references: [id])
   userId                 String
-  Location               Location @relation(fields: [locationId], references: [id])
+  Location               Location     @relation(fields: [locationId], references: [id])
   locationId             String
+  Orders                 Order[]
+  StkRequest             StkRequest[]
 }
 
 model Location {
@@ -104,49 +108,82 @@ model Location {
 }
 
 model Order {
-  id                String        @id @default(uuid())
-  index             Int           @default(autoincrement())
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-  products          Product[]
-  status            PaymentStatus @default(PENDING)
-  is_shipped        Boolean       @default(false)
-  cart_total        Int
-  amount_payable    Int
-  shipping_cost     Int
-  mpesa_number      String
-  User              User?         @relation(fields: [userId], references: [id])
+  id                String      @id @default(uuid())
+  index             Int         @default(autoincrement())
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  isShipped         Boolean     @default(false)
+  user              User?       @relation(fields: [userId], references: [id])
   userId            String?
-  payment           Stk?
-  checkoutrequestid String        @unique
+  items             OrderItem[]
+  shippingAddressId String
+  shippingAddress   Address     @relation(fields: [shippingAddressId], references: [id])
+  StkResponse       StkResponse @relation(fields: [stkResponseId], references: [id])
+  stkResponseId     String      @unique
+  amountPayable     Int
+  amountPaid        Int
+  mpesaNumber       String
 }
 
-enum PaymentStatus {
+model OrderItem {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  quantity  Int
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  Order     Order?   @relation(fields: [orderId], references: [id])
+  orderId   String?
+}
+
+model StkRequest {
+  id                  String       @id @default(uuid())
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  MerchantRequestID   String
+  CheckoutRequestID   String       @unique
+  ResponseCode        Int
+  ResponseDescription String
+  CustomerMessage     String
+  StkResponse         StkResponse?
+  amount              Int
+  phone               String
+  status              Status       @default(PENDING)
+  user                User?        @relation(fields: [userId], references: [id])
+  userId              String?
+  shippingAddress     Address?     @relation(fields: [shippingAddressId], references: [id])
+  shippingAddressId   String?
+  Session             Session      @relation(fields: [sessionId], references: [sessionId])
+  sessionId           String
+}
+
+enum Status {
   PENDING
-  PAID
+  SUCCESS
   FAILED
 }
 
-model Stk {
+model StkResponse {
   id                String             @id @default(uuid())
   index             Int                @default(autoincrement())
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
-  merchantrequestid String
-  checkoutrequestid String             @unique
-  resultcode        Int
-  resultdesc        String
-  callbackmetadata  CallbackMetaData[]
-  Order             Order              @relation(fields: [orderId], references: [id])
-  orderId           String             @unique
+  MerchantRequestID String
+  CheckoutRequestID String             @unique
+  ResultCode        Int
+  ResultDesc        String
+  CallbackMetadata  CallbackMetaData[]
+  StkRequest        StkRequest         @relation(fields: [StkRequestId], references: [id])
+  StkRequestId      String             @unique
+  Order             Order?
 }
 
 model CallbackMetaData {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  name      String
-  value     String
-  Stk       Stk?     @relation(fields: [stkId], references: [id])
-  stkId     String?
+  id            String       @id @default(uuid())
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  name          String
+  value         String
+  StkResponse   StkResponse? @relation(fields: [stkResponseId], references: [id])
+  stkResponseId String?
 }

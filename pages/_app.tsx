@@ -8,6 +8,7 @@ import { ShoppingCartProvider } from '../contexts/ShoppingCartContext';
 import { ModalProvider } from '../contexts/ModalContext';
 import apolloClient from '../lib/apollo';
 import Layout from '../components/Layout';
+import { AddressProvider } from '../contexts/AddressContext';
 
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
 	getLayout?: (page: ReactElement) => ReactNode;
@@ -24,13 +25,15 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
 	return (
 		<UserProvider>
 			<ShoppingCartProvider>
-				<ModalProvider>
-					<ApolloProvider client={apolloClient}>
-						{getLayout(
-							<Component {...pageProps} />
-						)}
-					</ApolloProvider>
-				</ModalProvider>
+				<AddressProvider>
+					<ModalProvider>
+						<ApolloProvider client={apolloClient}>
+							{getLayout(
+								<Component {...pageProps} />
+							)}
+						</ApolloProvider>
+					</ModalProvider>
+				</AddressProvider>
 			</ShoppingCartProvider>
 		</UserProvider>
 	);

@@ -178,7 +178,7 @@ export default function Header() {
 										aria-hidden="true"
 									/>
 									<div className="absolute inline-flex items-center justify-center w-6 h-6 text-sm font-bold  rounded-full -top-2 -right-2">
-										{cartCountData?.cartCount}
+										{cartCountData?.cartCount ?? 0}
 									</div>
 								</Link>
 								{user ? (
@@ -195,8 +195,8 @@ export default function Header() {
 												/>
 
 											</Menu.Button>
-											<p className="text-xs truncate font-bold">
-												{user?.given_name as string ?? 'User'}
+											<p className="text-xs truncate w-16 font-bold">
+												{user?.name ?? 'User'}
 											</p>
 										</div>
 										<Transition
@@ -258,7 +258,7 @@ export default function Header() {
 										</Link>
 										<Link
 											href="/api/auth/login"
-											className="hidden sm:block sm:ml-8 px-3 py-2  text-sm font-medium rounded-full bg-gray-300 p-1 text-gray-500 hover:text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500"
+											className="hidden sm:block sm:ml-3 px-3 py-2  text-sm font-medium rounded-full bg-gray-300 p-1 text-gray-500 hover:text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500"
 										>
 											Sign In
 										</Link>

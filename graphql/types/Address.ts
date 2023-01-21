@@ -47,6 +47,20 @@ export const AddressessQuery = extendType({
 				return ctx.prisma.address.findMany();
 			},
 		});
+		t.field('getShipping', {
+			type: 'Int',
+			args: {
+				id: nonNull(stringArg())
+			},
+			async resolve(_parent, _args, ctx) {
+				const location = await ctx.prisma.address.findUnique({
+					where: {
+						id: _args.id,
+					},
+				}).Location()
+				return location.shipping;
+			}
+		})
 	},
 });
 

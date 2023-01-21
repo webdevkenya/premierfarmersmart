@@ -13,6 +13,12 @@ type Address {
   user: User
 }
 
+type CallbackMetadata {
+  name: String
+  stkResponseId: String
+  value: String
+}
+
 type Cart {
   id: String
   items: [CartItem]
@@ -57,8 +63,8 @@ type Mutation {
   addFavorite(id: String!): Product!
   addToCart(id: String!): Cart!
   createAddress(firstName: String!, lastName: String!, location: String!, phoneNumber: String!, specificAddress: String!): Address!
-  createOrder(amountPayable: Int!, cartTotal: Int!, checkoutrequestid: String!, mpesaNumber: String!, products: [String]!, shippingCost: Int!): Order!
   createProduct(category: String!, image: String!, name: String!, price: Int!, price_type: String!, stock: Int!): Product!
+  createStkRequest(CheckoutRequestID: String!, CustomerMessage: String!, MerchantRequestID: String!, ResponseCode: Int!, ResponseDescription: String!, amount: Int!, phone: String!, shippingAddressId: String!): StkRequest!
   decreaseQuantity(id: String!): CartItem
   deleteAddress(id: String): Address!
   deleteFavorite(id: String): Product!
@@ -67,23 +73,30 @@ type Mutation {
 }
 
 type Order {
-  amount_payable: Int
-  cart_total: Int
+  StkResponse: StkResponse
+  amountPaid: Int
+  amountPayable: Int
   checkoutrequestid: String
   id: String
-  is_shipped: Boolean
-  mpesa_number: String
-  payment: Stk
-  products: [Product]
-  shipping_cost: Int
-  status: OrderStatus
+  isShipped: Boolean
+  items: [Order]
+  mpesaNumber: String
+  shippingAddress: Address
   user: User
+}
+
+type OrderItem {
+  cartId: String
+  id: String
+  orderId: String
+  product: Product
+  quantity: Int
 }
 
 enum OrderStatus {
   FAILED
-  PAID
   PENDING
+  SUCCESS
 }
 
 type PageInfo {
@@ -111,8 +124,11 @@ type Query {
   counties: [County]!
   getAllUsers: [User]!
   getProductsByCategory(after: String, category: String, first: Int): Response
-  order(id: String!): Order!
+  getShipping(id: String!): Int
+  getStkRequestById(id: String!): StkRequest
   products(after: String, first: Int): Response
+  stkRequest: [StkRequest]!
+  stkResponse: [StkResponse]!
 }
 
 type Response {
@@ -125,13 +141,31 @@ enum Role {
   USER
 }
 
-type Stk {
-  checkoutrequestid: String
+type StkRequest {
+  CheckoutRequestID: String
+  CustomerMessage: String
+  MerchantRequestID: String
+  ResponseCode: Int
+  ResponseDescription: String
+  SessionId: String
+  StkResponse: StkResponse
+  amount: Int
   id: String
-  merchantrequestid: String
+  phone: String
+  shippingAddress: Address
+  status: OrderStatus
+  user: User
+}
+
+type StkResponse {
+  CallbackMetadata: [CallbackMetadata]
+  CheckoutRequestID: String
+  MerchantRequestID: String
+  ResultCode: Int
+  ResultDesc: String
+  StkRequest: StkRequest
+  id: String
   order: Order
-  resultcode: Int
-  resultdesc: String
 }
 
 type Town {

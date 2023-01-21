@@ -1,7 +1,53 @@
+import { useEffect } from 'react'
 import { useShoppingCart } from '../contexts/ShoppingCartContext';
+import { gql, useQuery } from '@apollo/client';
+import { useShippingAddress } from '../contexts/AddressContext'
+
+export const GetCartTotalQuery = gql`
+	query GetCartTotal  {
+		cartTotal
+	}
+`;
+
+export const GetShippingQuery = gql`
+	query GetShipping($id:String!){
+		getShipping(id: $id) 
+	}
+`;
+
+const CartQuery = gql`
+	query CartQuery {
+		cart{
+			id
+			items {	
+				id
+				product{
+				name
+				image,
+				price,
+				price_type,
+				}
+				productTotal
+				quantity
+			}
+		}
+	}
+`;
+
 
 const OrderSummary = () => {
-	const { items, getTotal, shipping, amountPayable } = useShoppingCart();
+
+	//	const { items, getTotal, shipping, amountPayable } = useShoppingCart();
+	const { address } = useShippingAddress()
+	const { data: cartData } = useQuery(CartQuery)
+	const { data: cartTotalData } = useQuery(GetCartTotalQuery)
+	const { data: shippingData }
+		= useQuery(GetShippingQuery, {
+			variables: {
+				id: address
+			}
+		})
+	console.log('shippingData', shippingData);
 
 	return (
 		<div className="w-full mt-6 px-4">
@@ -26,8 +72,8 @@ const OrderSummary = () => {
 					</tr>
 				</thead>
 				<tbody>
-					{items.map(
-						({ id, name, quantity, productTotal, price }) => (
+					{cartData?.cart.items.map(
+						({ id, product: { name, price }, quantity, productTotal }) => (
 							<tr key={id}>
 								<td className="p-2 text-gray-700">{name}</td>
 								<td className="text-right p-2 text-gray-700">
@@ -46,7 +92,7 @@ const OrderSummary = () => {
 							Sub Total
 						</td>
 						<td className="p-2 font-semibold text-gray-700">
-							{`KES ${getTotal()}`}
+							{`KES ${cartTotalData?.cartTotal}`}
 						</td>
 					</tr>
 					<tr>
@@ -54,7 +100,7 @@ const OrderSummary = () => {
 							Shipping
 						</td>
 						<td className="p-2 font-semibold text-gray-700">
-							{`KES ${shipping}`}
+							{`KES ${shippingData?.getShipping}`}
 						</td>
 					</tr>
 					<tr>
@@ -62,7 +108,7 @@ const OrderSummary = () => {
 							Total
 						</td>
 						<td className="p-2 font-semibold text-gray-700">
-							{`KES ${amountPayable()}`}
+							{`KES ${shippingData?.getShipping + cartTotalData?.cartTotal}`}
 						</td>
 					</tr>
 				</tbody>

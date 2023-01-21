@@ -13,36 +13,31 @@ export type Context = {
 export async function createContext({ req, res }): Promise<Context> {
 
 	const session = await getSession(req, res);
-	console.log('cookies', req.cookies);
+	// console.log('cookies', req.cookies);
 
 	const sessionId = req.cookies?.sessionId
-	console.log('sessionId', sessionId);
+	// console.log('sessionId', sessionId);
+
+	if (!sessionId) {
+		throw new Error('no session id')
+	}
+	const hasSession = await prisma.session.findUnique({
+		where: { sessionId }
+	});
+	if (!hasSession) {
+		const res = await prisma.session.create({
+			data: { sessionId }
+		})
+
+		if (!res) {
+			throw new Error('unable to save session')
+		}
+
+	}
 
 	// if the user is not logged in, omit returning the user and accessToken
 	if (!session) {
-
-		if (!sessionId) {
-			throw new Error('no session id')
-		}
-		const hasSession = await prisma.session.findUnique({
-			where: { sessionId }
-		});
-
-		if (!hasSession) {
-			const res = await prisma.session.create({
-				data: { sessionId }
-			})
-			console.log('res', res);
-
-			if (!res) {
-				throw new Error('unable to save session')
-			}
-			return { prisma, sessionId };
-
-		}
-
 		return { prisma, sessionId };
-
 	}
 	const { user, accessToken } = session;
 
@@ -50,5 +45,6 @@ export async function createContext({ req, res }): Promise<Context> {
 		user,
 		accessToken,
 		prisma,
+		sessionId
 	};
 }

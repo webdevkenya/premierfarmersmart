@@ -1,27 +1,57 @@
 import {
 	objectType,
 	extendType,
-	list,
 	nonNull,
-	intArg,
 	stringArg,
-	enumType,
+
 } from 'nexus';
 import { Product } from './Product';
 import { User } from './User';
-import { Stk } from './Stk';
+import { StkResponse } from './Stk';
+import { Address } from './Address';
+
+export const OrderItem = objectType({
+	name: 'OrderItem',
+	definition(t) {
+		t.string('id');
+		t.string('cartId')
+		t.string('orderId')
+		t.int('quantity');
+		t.field('product', {
+			type: Product,
+			async resolve(parent, _args, ctx) {
+				return await ctx.prisma.cartItem
+					.findUnique({
+						where: {
+							id: parent.id,
+						},
+					}).product()
+			},
+		});
+	}
+})
 
 export const Order = objectType({
 	name: 'Order',
 	definition(t) {
 		t.string('id');
-		t.field('status', { type: PaymentStatus });
-		t.int('cart_total');
-		t.boolean('is_shipped');
-		t.string('mpesa_number');
+		t.boolean('isShipped');
 		t.string('checkoutrequestid');
-		t.int('amount_payable');
-		t.int('shipping_cost');
+		t.int('amountPayable');
+		t.int('amountPaid');
+		t.string('mpesaNumber');
+		t.field('shippingAddress', {
+			type: Address,
+			async resolve(parent, _args, ctx) {
+				return await ctx.prisma.order
+					.findUnique({
+						where: {
+							id: parent.id,
+						},
+					})
+					.shippingAddress()
+			},
+		});
 		t.field('user', {
 			type: User,
 			async resolve(parent, _args, ctx) {
@@ -31,11 +61,23 @@ export const Order = objectType({
 							id: parent.id,
 						},
 					})
-					.User();
+					.user()
 			},
 		});
-		t.field('payment', {
-			type: Stk,
+		t.list.field('items', {
+			type: Order,
+			async resolve(parent, _args, ctx) {
+				return await ctx.prisma.order
+					.findUnique({
+						where: {
+							id: parent.id,
+						},
+					}).items()
+
+			},
+		});
+		t.field('StkResponse', {
+			type: StkResponse,
 			async resolve(parent, _args, ctx) {
 				return await ctx.prisma.order
 					.findUnique({
@@ -43,89 +85,11 @@ export const Order = objectType({
 							id: parent.id,
 						},
 					})
-					.payment();
-			},
-		});
-		t.list.field('products', {
-			type: Product,
-			async resolve(parent, _args, ctx) {
-				return await ctx.prisma.order
-					.findUnique({
-						where: {
-							id: parent.id,
-						},
-					})
-					.products();
+					.StkResponse();
 			},
 		});
 	},
 });
 
-const PaymentStatus = enumType({
-	name: 'OrderStatus',
-	members: ['PENDING', 'PAID', 'FAILED'],
-});
 
-export const OrdersQuery = extendType({
-	type: 'Query',
-	definition(t) {
-		t.nonNull.field('order', {
-			type: Order,
-			args: {
-				id: nonNull(stringArg()),
-			},
-			resolve(_parent, args, ctx) {
-				return ctx.prisma.order.findUnique({
-					where: {
-						id: args.id,
-					},
-				});
-			},
-		});
-	},
-});
 
-export const CreateOrderMutation = extendType({
-	type: 'Mutation',
-	definition(t) {
-		t.nonNull.field('createOrder', {
-			type: Order,
-			args: {
-				products: nonNull(list(stringArg())),
-				amountPayable: nonNull(intArg()),
-				cartTotal: nonNull(intArg()),
-				shippingCost: nonNull(intArg()),
-				mpesaNumber: nonNull(stringArg()),
-				checkoutrequestid: nonNull(stringArg()),
-			},
-			async resolve(_parent, args, ctx) {
-				if (!ctx.user) {
-					throw new Error(
-						`You need to be logged in to perform an action`
-					);
-				}
-				const user = await ctx.prisma.user.findUnique({
-					where: {
-						email: ctx.user.email,
-					},
-				});
-
-				const newOrder = {
-					products: {
-						connect: args.products.map((id) => ({ id })),
-					},
-					cart_total: args.cartTotal,
-					amount_payable: args.amountPayable,
-					shipping_cost: args.shippingCost,
-					mpesa_number: args.mpesaNumber,
-					checkoutrequestid: args.checkoutrequestid,
-					userId: user.id,
-				};
-
-				return await ctx.prisma.order.create({
-					data: newOrder,
-				});
-			},
-		});
-	},
-});

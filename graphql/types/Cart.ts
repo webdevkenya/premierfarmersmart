@@ -81,15 +81,7 @@ export const CartQuery = extendType({
 		t.nonNull.field('cart', {
 			type: Cart,
 			async resolve(_parent, _args, ctx) {
-				if (!ctx.user) {
-					return await ctx.prisma.cart.findUnique({ where: { sessionId: ctx.sessionId } });
-				}
-				const user = await ctx.prisma.user.findUnique({
-					where: {
-						email: ctx.user.email,
-					},
-				});
-				return ctx.prisma.cart.findUnique({ where: { userId: user.id } });
+				return await ctx.prisma.cart.findUnique({ where: { sessionId: ctx.sessionId } });
 			},
 		});
 		t.nonNull.field('cartTotal', {
@@ -147,49 +139,24 @@ export const CartMutation = extendType({
 				id: nonNull(stringArg()),
 			},
 			async resolve(_parent, args, ctx) {
-
-				if (!ctx.user) {
-					const cart = await ctx.prisma.cart.findUnique({ where: { sessionId: ctx.sessionId } });
-					if (!cart) {
-						return await ctx.prisma.cart.create({
-							data: {
-								sessionId: ctx.sessionId,
-								items: {
-									create: {
-										product: { connect: { id: args.id } }
-									},
-								},
-							}
-						})
-					}
-					return await ctx.prisma.cart.update({
-						where: { id: cart.id },
-						data: { items: { create: { product: { connect: { id: args.id } } } } }
-					});
-				}
-
-				const user = await ctx.prisma.user.findUnique({
-					where: {
-						email: ctx.user.email,
-					},
-				});
-
-				const cart = await ctx.prisma.cart.findUnique({ where: { userId: user.id } });
+				const cart = await ctx.prisma.cart.findUnique({ where: { sessionId: ctx.sessionId } });
 				if (!cart) {
 					return await ctx.prisma.cart.create({
 						data: {
 							sessionId: ctx.sessionId,
-							userId: user.id,
-							items: { create: { product: { connect: { id: args.id } } } }
+							items: {
+								create: {
+									product: { connect: { id: args.id } }
+								},
+							},
 						}
-
 					})
 				}
 				return await ctx.prisma.cart.update({
 					where: { id: cart.id },
 					data: { items: { create: { product: { connect: { id: args.id } } } } }
+				});
 
-				})
 			},
 		});
 		t.nonNull.field('increaseQuantity', {

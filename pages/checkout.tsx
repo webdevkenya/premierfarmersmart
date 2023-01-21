@@ -1,49 +1,63 @@
 import React from 'react';
 import { getSession } from '@auth0/nextjs-auth0';
-import { gql, useMutation, useLazyQuery } from '@apollo/client';
+import { gql, useMutation, useLazyQuery, useQuery } from '@apollo/client';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import AddressBook from '../components/AddressBook';
 import OrderSummary from '../components/OrderSummary';
-import { useShoppingCart } from '../contexts/ShoppingCartContext';
+//import { useShoppingCart } from '../contexts/ShoppingCartContext';
 import { useRouter } from 'next/router';
 import { toast, Toaster } from 'react-hot-toast';
+import { useShippingAddress } from '../contexts/AddressContext'
 
-const CreateOrderMutation = gql`
-	mutation (
-		$products: [String]!
-		$amountPayable: Int!
-		$shippingCost: Int!
-		$cartTotal: Int!
-		$mpesaNumber: String!
-		$checkoutrequestid: String!
+const CreateStkRequestMutation = gql`
+	mutation CreateStkRequest(
+		$MerchantRequestID: String!
+				$CheckoutRequestID: String!
+				$ResponseCode: Int!
+				$ResponseDescription: String!
+				$CustomerMessage: String!
+				$amount: Int!
+				$phone: String!
+				$shippingAddressId: String!
 	) {
-		createOrder(
-			products: $products
-			amountPayable: $amountPayable
-			shippingCost: $shippingCost
-			mpesaNumber: $mpesaNumber
-			cartTotal: $cartTotal
-			checkoutrequestid: $checkoutrequestid
+		createStkRequest(
+			MerchantRequestID: $MerchantRequestID
+				CheckoutRequestID: $CheckoutRequestID
+				ResponseCode: $ResponseCode
+				ResponseDescription: $ResponseDescription
+				CustomerMessage: $CustomerMessage
+				amount: $amount
+				phone: $phone
+				shippingAddressId: $shippingAddressId
 		) {
 			id
-			amount_payable
-			mpesa_number
-			checkoutrequestid
 		}
 	}
 `;
 
-const orderQuery = gql`
-	query GetPaymentStatus($id: String!) {
-		order(id: $id) {
-			status
+const GetStkRequestByIDQuery = gql`
+	query GetStkRequestByID($id: String!) {
+		getStkRequestById(id: $id) {
 			id
-			payment {
-				resultdesc
+			status
+			StkResponse{
+				id
 			}
 		}
+	}
+`;
+
+export const GetCartTotalQuery = gql`
+	query GetCartTotal  {
+		cartTotal
+	}
+`;
+
+export const GetShippingQuery = gql`
+	query GetShipping($id:String!){
+		getShipping(id: $id) 
 	}
 `;
 
@@ -64,6 +78,14 @@ const schema = yup
 
 const Checkout = () => {
 	const router = useRouter();
+	const { address } = useShippingAddress()
+	const { data: cartTotalData } = useQuery(GetCartTotalQuery)
+	const { data: shippingData } = useQuery(GetShippingQuery, {
+		variables: {
+			id: address
+		}
+	})
+
 	const {
 		register,
 		handleSubmit,
@@ -73,20 +95,24 @@ const Checkout = () => {
 		resolver: yupResolver(schema),
 	});
 
-	const [createOrder] = useMutation(CreateOrderMutation, {
+	const [createStkRequest] = useMutation(CreateStkRequestMutation, {
 		onCompleted: () => reset(),
 	});
 
 	const [getPaymentStatus, { data: statusQuery, stopPolling }] =
-		useLazyQuery(orderQuery);
+		useLazyQuery(GetStkRequestByIDQuery);
 
-	const { items, amountPayable, getTotal, shipping } = useShoppingCart();
+	// const { items, amountPayable, getTotal, shipping } = useShoppingCart();
 
 	const onSubmit = async (data: IFormInputs) => {
 		try {
 			const { mpesaNumber } = data;
-			const amount = amountPayable();
-			const cartTotal = getTotal();
+			//			const amount = amountPayable();
+			const cartTotal = cartTotalData?.cartTotal
+			const shipping = shippingData?.getShipping
+			const amountPayable = cartTotal + shipping
+
+			console.log(` amount payablle = ${cartTotal} + ${shipping} = ${amountPayable}`);
 
 			const res = await fetch('/api/stk', {
 				method: 'POST',
@@ -101,6 +127,7 @@ const Checkout = () => {
 			if (res.status !== 200) {
 				throw new Error('Payment failed');
 			}
+
 			const result = await res.json();
 			console.log('result', result);
 			toast.success(
@@ -108,21 +135,24 @@ const Checkout = () => {
 			);
 
 			const variables = {
-				products: items.map(({ id }) => id),
-				amountPayable: amount,
-				shippingCost: shipping,
-				cartTotal,
-				mpesaNumber,
-				checkoutrequestid: result.CheckoutRequestID,
+				MerchantRequestID: result.MerchantRequestID,
+				CheckoutRequestID: result.CheckoutRequestID,
+				ResponseCode: parseInt(result.ResponseCode),
+				ResponseDescription: result.ResponseDescription,
+				CustomerMessage: result.CustomerMessage,
+				amount: amountPayable,
+				phone: mpesaNumber,
+				shippingAddressId: address
 			};
-			const order = await createOrder({ variables });
-			console.log('order', order);
-			if (!order) {
-				throw new Error('could not create order');
+			const { data: createStkRequestData, errors } = await createStkRequest({ variables });
+			console.log('createStkRequestData', createStkRequestData);
+			if (errors) {
+				console.log('errors', errors);
+				throw new Error('could not create payment request');
 			}
 
 			const { startPolling } = await getPaymentStatus({
-				variables: { id: order.data.createOrder.id },
+				variables: { id: createStkRequestData.createStkRequest.id },
 			});
 
 			startPolling(1000);
@@ -131,19 +161,19 @@ const Checkout = () => {
 		}
 	};
 
-	if (statusQuery?.order?.status === 'PAID') {
+	if (statusQuery?.getStkRequestById?.status === 'SUCCESS') {
 		stopPolling();
 		router.push({
 			pathname: '/success',
 			query: {
-				orderNumber: statusQuery.order.id,
+				orderNumber: statusQuery.getStkRequestById.StkResponse.id,
 			},
 		});
 	}
 
-	if (statusQuery?.order?.status === 'FAILED') {
+	if (statusQuery?.getStkRequestById?.status === 'FAILED') {
 		stopPolling();
-		console.log('result', statusQuery.order.payment.resultdesc);
+		console.log('result', statusQuery.getStkRequestById);
 		router.push('/cancelled');
 	}
 
