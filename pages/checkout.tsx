@@ -6,7 +6,6 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import AddressBook from '../components/AddressBook';
 import OrderSummary from '../components/OrderSummary';
-//import { useShoppingCart } from '../contexts/ShoppingCartContext';
 import { useRouter } from 'next/router';
 import { toast, Toaster } from 'react-hot-toast';
 import { useShippingAddress } from '../contexts/AddressContext'
@@ -102,8 +101,6 @@ const Checkout = () => {
 	const [getPaymentStatus, { data: statusQuery, stopPolling }] =
 		useLazyQuery(GetStkRequestByIDQuery);
 
-	// const { items, amountPayable, getTotal, shipping } = useShoppingCart();
-
 	const onSubmit = async (data: IFormInputs) => {
 		try {
 			if (!address) {
@@ -112,7 +109,6 @@ const Checkout = () => {
 			}
 
 			const { mpesaNumber } = data;
-			//			const amount = amountPayable();
 			const cartTotal = cartTotalData?.cartTotal
 			const shipping = shippingData?.getShipping
 			const amountPayable = cartTotal + shipping
@@ -162,6 +158,7 @@ const Checkout = () => {
 
 			startPolling(1000);
 		} catch (error) {
+			toast.error('Something went wrong please try again');
 			console.error(error);
 		}
 	};
@@ -169,9 +166,9 @@ const Checkout = () => {
 	if (statusQuery?.getStkRequestById?.status === 'SUCCESS') {
 		stopPolling();
 		router.push({
-			pathname: '/success',
+			pathname: '/order-success',
 			query: {
-				orderNumber: statusQuery.getStkRequestById.StkResponse.id,
+				stkResponseId: statusQuery.getStkRequestById.StkResponse.id,
 			},
 		});
 	}
@@ -179,7 +176,12 @@ const Checkout = () => {
 	if (statusQuery?.getStkRequestById?.status === 'FAILED') {
 		stopPolling();
 		console.log('result', statusQuery.getStkRequestById);
-		router.push('/cancelled');
+		router.push({
+			pathname: '/order-fail',
+			query: {
+				stkResponseId: statusQuery.getStkRequestById.StkResponse.id,
+			},
+		});
 	}
 
 	return (
