@@ -64,7 +64,7 @@ export const AddressessQuery = extendType({
 	},
 });
 
-export const CreateAddressMutation = extendType({
+export const AddressMutation = extendType({
 	type: 'Mutation',
 	definition(t) {
 		t.nonNull.field('createAddress', {
@@ -106,7 +106,7 @@ export const CreateAddressMutation = extendType({
 		t.nonNull.field('deleteAddress', {
 			type: Address,
 			args: {
-				id: stringArg(),
+				id: nonNull(stringArg()),
 			},
 			async resolve(_parent, args, ctx) {
 				if (!ctx.user) {
@@ -115,11 +115,11 @@ export const CreateAddressMutation = extendType({
 					);
 				}
 
-				const product = await ctx.prisma.address.findUnique({
+				const address = await ctx.prisma.address.findUnique({
 					where: { id: args.id },
 				});
 
-				if (!product) {
+				if (!address) {
 					throw new Error(`Address with id ${args.id} not found`);
 				}
 

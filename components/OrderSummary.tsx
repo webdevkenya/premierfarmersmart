@@ -100,7 +100,7 @@ const OrderSummary = () => {
 							Shipping
 						</td>
 						<td className="p-2 font-semibold text-gray-700">
-							{`KES ${shippingData?.getShipping}`}
+							{`KES ${shippingData?.getShipping ?? 0}`}
 						</td>
 					</tr>
 					<tr>
@@ -108,7 +108,7 @@ const OrderSummary = () => {
 							Total
 						</td>
 						<td className="p-2 font-semibold text-gray-700">
-							{`KES ${shippingData?.getShipping + cartTotalData?.cartTotal}`}
+							{`KES ${(shippingData?.getShipping ?? 0) + (cartTotalData?.cartTotal ?? 0)}`}
 						</td>
 					</tr>
 				</tbody>

@@ -78,7 +78,7 @@ export const Cart = objectType({
 export const CartQuery = extendType({
 	type: 'Query',
 	definition(t) {
-		t.nonNull.field('cart', {
+		t.field('cart', {
 			type: Cart,
 			async resolve(_parent, _args, ctx) {
 				return await ctx.prisma.cart.findUnique({ where: { sessionId: ctx.sessionId } });

@@ -106,6 +106,11 @@ const Checkout = () => {
 
 	const onSubmit = async (data: IFormInputs) => {
 		try {
+			if (!address) {
+				toast.error('Please select your delivery address');
+				return;
+			}
+
 			const { mpesaNumber } = data;
 			//			const amount = amountPayable();
 			const cartTotal = cartTotalData?.cartTotal
@@ -209,7 +214,7 @@ const Checkout = () => {
 
 						<button
 							type="submit"
-							className="mt-6 w-full text-center px-4 py-2 font-medium text-white bg-indigo-600 rounded-full hover:bg-indigo-500 focus:outline-none focus:bg-indigo-500"
+							className="mt-6 w-full text-center px-4 py-2 font-medium text-white bg-gray-800 rounded-full hover:bg-gray-900"
 						>
 							Pay with Mpesa
 						</button>

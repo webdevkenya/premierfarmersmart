@@ -27,8 +27,8 @@ export const Product = objectType({
 	},
 });
 
-export const Edge = objectType({
-	name: 'Edge',
+export const ProductEdge = objectType({
+	name: 'ProductEdge',
 	definition(t) {
 		t.string('cursor');
 		t.field('node', {
@@ -37,20 +37,20 @@ export const Edge = objectType({
 	},
 });
 
-export const PageInfo = objectType({
-	name: 'PageInfo',
+export const ProductPageInfo = objectType({
+	name: 'ProductPageInfo',
 	definition(t) {
 		t.string('endCursor');
 		t.boolean('hasNextPage');
 	},
 });
 
-export const Response = objectType({
-	name: 'Response',
+export const ProductResponse = objectType({
+	name: 'ProductResponse',
 	definition(t) {
-		t.field('pageInfo', { type: PageInfo });
+		t.field('pageInfo', { type: ProductPageInfo });
 		t.list.field('edges', {
-			type: Edge,
+			type: ProductEdge,
 		});
 	},
 });
@@ -69,7 +69,7 @@ export const ProductsQuery = extendType({
 	type: 'Query',
 	definition(t) {
 		t.field('products', {
-			type: Response,
+			type: ProductResponse,
 			args: {
 				first: intArg(),
 				after: stringArg(),
@@ -84,13 +84,17 @@ export const ProductsQuery = extendType({
 						skip: 1, // skip the cursor
 						cursor: {
 							id: args.after, // the cursor
-						},
+						}, orderBy: {
+							index: 'desc'
+						}
 					});
 				} else {
 					// if no cursor, this means that this is the first request
 					//  and we will return the first items in the database
 					queryResults = await ctx.prisma.product.findMany({
-						take: args.first,
+						take: args.first, orderBy: {
+							index: 'desc'
+						}
 					});
 				}
 				// if the initial request returns products
@@ -109,8 +113,8 @@ export const ProductsQuery = extendType({
 								id: myCursor,
 							},
 							orderBy: {
-								index: 'asc',
-							},
+								index: 'desc'
+							}
 						});
 
 					// return response
@@ -139,7 +143,7 @@ export const ProductsQuery = extendType({
 			},
 		});
 		t.field('getProductsByCategory', {
-			type: Response,
+			type: ProductResponse,
 			args: {
 				category: stringArg(),
 				first: intArg(),
@@ -159,6 +163,9 @@ export const ProductsQuery = extendType({
 						cursor: {
 							id: args.after, // the cursor
 						},
+						orderBy: {
+							index: 'desc'
+						}
 					});
 				} else {
 					// if no cursor, this means that this is the first request
@@ -167,7 +174,9 @@ export const ProductsQuery = extendType({
 						where: {
 							category: args.category
 						},
-						take: args.first,
+						take: args.first, orderBy: {
+							index: 'desc'
+						}
 					});
 				}
 				// if the initial request returns products
@@ -189,7 +198,7 @@ export const ProductsQuery = extendType({
 								id: myCursor,
 							},
 							orderBy: {
-								index: 'asc',
+								index: 'desc',
 							},
 						});
 
@@ -230,7 +239,7 @@ export const ProductsQuery = extendType({
 	},
 });
 
-export const CreateProductMutation = extendType({
+export const ProductMutation = extendType({
 	type: 'Mutation',
 	definition(t) {
 		t.nonNull.field('createProduct', {
@@ -255,7 +264,7 @@ export const CreateProductMutation = extendType({
 					},
 				});
 
-				if (user.role !== 'ADMIN') {
+				if (user?.role !== 'ADMIN') {
 					throw new Error(
 						`You do not have permission to perform action`
 					);
@@ -271,6 +280,43 @@ export const CreateProductMutation = extendType({
 
 				return await ctx.prisma.product.create({
 					data: newProduct,
+				});
+			},
+		});
+		t.nonNull.field('deleteProduct', {
+			type: Product,
+			args: {
+				id: nonNull(stringArg()),
+			},
+			async resolve(_parent, args, ctx) {
+				if (!ctx.user) {
+					throw new Error(
+						`You need to be logged in to perform an action`
+					);
+				}
+				const user = await ctx.prisma.user.findUnique({
+					where: {
+						email: ctx.user.email,
+					},
+				});
+
+				if (user?.role !== 'ADMIN') {
+					throw new Error(
+						`You do not have permission to perform action`
+					);
+				}
+				const product = await ctx.prisma.product.findUnique({
+					where: { id: args.id },
+				});
+
+				if (!product) {
+					throw new Error(`Product with id ${args.id} not found`);
+				}
+
+				return ctx.prisma.product.delete({
+					where: {
+						id: args.id,
+					},
 				});
 			},
 		});

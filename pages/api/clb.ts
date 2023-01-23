@@ -97,8 +97,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 						quantity: true,
 						product: {
 							select: {
-								id: true,
-								price: true
+								price: true,
+								image: true,
+								price_type: true,
+								name: true,
+								category: true
 							}
 						}
 					}
@@ -170,9 +173,13 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 				mpesaNumber: stkreq.phone,
 				stkResponseId: stkResponse.id,
 				items: {
-					create: cart.items.map(({ quantity, product }) => ({
-						productId: product.id,
+					create: cart.items.map(({ quantity, product: { name, price, price_type, category, image } }) => ({
 						quantity,
+						name,
+						price,
+						priceType: price_type,
+						category,
+						image,
 					}))
 				},
 			},

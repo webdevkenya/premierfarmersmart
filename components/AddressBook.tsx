@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { gql, useQuery, useMutation } from '@apollo/client';
-import AddressModal from './AddressModal';
+import ModalWrapper from './ModalWrapper';
 import { toast } from 'react-hot-toast';
-import { useShoppingCart } from '../contexts/ShoppingCartContext';
 import { RadioGroup } from '@headlessui/react'
 import { useShippingAddress } from '../contexts/AddressContext'
+import AddressForm from './AddressForm'
 
 
 export const AddressesQuery = gql`
@@ -78,12 +78,15 @@ const AddressBook = () => {
 
 	return (
 		<div className="container mx-auto px-4">
-			<div className="flex justify-between mb-6">
+			<div className="flex justify-between mb-4">
 				<h1 className="text-2xl font-bold text-gray-800">
 					Address Book
 				</h1>
-				<AddressModal />
+				<ModalWrapper title='Create Address'>
+					<AddressForm />
+				</ModalWrapper>
 			</div>
+			<p className='pb-4 text-gray-400'>Select your delivery address</p>
 			<RadioGroup value={address} onChange={setShippingAddress}>
 				<RadioGroup.Label className="sr-only">Address Book</RadioGroup.Label>
 				<ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

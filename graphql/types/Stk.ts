@@ -16,7 +16,7 @@ export const StkRequest = objectType({
 		t.string('CustomerMessage');
 		t.int('amount')
 		t.string('phone')
-		t.field('status', { type: Status })
+		t.field('status', { type: PaymentStatus })
 		t.field('StkResponse', {
 			type: StkResponse,
 			async resolve(parent, _args, ctx) {
@@ -116,8 +116,8 @@ const CallbackMetadata = objectType({
 
 })
 
-const Status = enumType({
-	name: 'OrderStatus',
+const PaymentStatus = enumType({
+	name: 'PaymentStatus',
 	members: ['PENDING', 'SUCCESS', 'FAILED'],
 });
 
@@ -138,7 +138,7 @@ export const StkQuery = extendType({
 					},
 				});
 
-				if (user.role !== 'ADMIN') {
+				if (user?.role !== 'ADMIN') {
 					throw new Error(
 						`You do not have permission to perform action`
 					);
@@ -160,7 +160,7 @@ export const StkQuery = extendType({
 					},
 				});
 
-				if (user.role !== 'ADMIN') {
+				if (user?.role !== 'ADMIN') {
 					throw new Error(
 						`You do not have permission to perform action`
 					);

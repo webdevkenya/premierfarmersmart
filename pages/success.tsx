@@ -16,7 +16,7 @@ const Success = () => {
 				${orderNumber}`}
 			</p>
 			<Link
-				className=" w-2/3 px-4 py-2 bg-indigo-500 text-center text-white rounded-full hover:bg-indigo-600"
+				className=" w-2/3 px-4 py-2 bg-gray-800 text-center text-white rounded-full hover:bg-gray-900"
 				href="/"
 			>
 				Continue Shopping ?

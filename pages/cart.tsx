@@ -86,11 +86,7 @@ const Cart = () => {
 				<h3 className="text-lg leading-6 font-medium text-gray-900">
 					Shopping Cart
 				</h3>
-				{data.cart?.items?.length === 0 ? (
-					<p className="mt-1 max-w-2xl text-sm leading-5 text-gray-500">
-						Your shopping cart is empty.
-					</p>
-				) : (
+				{data.cart?.items?.length !== 0 ? (
 					<div className="mt-2">
 						<table className="w-full">
 							<thead>
@@ -215,12 +211,16 @@ const Cart = () => {
 						<div className="pt-4 flex justify-center">
 							<Link
 								href="/checkout"
-								className="w-full text-center px-4 py-2 font-medium text-white bg-indigo-600 rounded-full hover:bg-indigo-500 focus:outline-none focus:bg-indigo-500"
+								className="w-full text-center px-4 py-2 font-medium text-white bg-gray-800 rounded-full hover:bg-gray-900"
 							>
 								Checkout
 							</Link>
 						</div>
-					</div>
+					</div>) : (
+					<p className="mt-1 max-w-2xl text-sm leading-5 text-gray-500">
+						Your shopping cart is empty.
+					</p>
+
 				)}
 			</div>
 		</div>
