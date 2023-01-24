@@ -18,7 +18,7 @@ import { Popover } from '@headlessui/react'
 
 const navigation = [
 	{ name: 'Home', href: '/', current: true },
-	{ name: 'Contacts', href: '#', current: false },
+	{ name: 'Contacts', href: '/contacts', current: false },
 ];
 
 function classNames(...classes) {

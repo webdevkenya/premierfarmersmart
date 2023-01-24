@@ -3,6 +3,7 @@ import { useShoppingCart } from '../contexts/ShoppingCartContext';
 import { CldImage } from 'next-cloudinary';
 import { gql, useQuery, useMutation } from '@apollo/client';
 import { CartCountQuery } from '../components/Layout/Header';
+import Image from 'next/image';
 
 const CartQuery = gql`
 	query CartQuery {
@@ -86,7 +87,7 @@ const Cart = () => {
 				<h3 className="text-lg leading-6 font-medium text-gray-900">
 					Shopping Cart
 				</h3>
-				{data.cart?.items?.length !== 0 ? (
+				{data.cart && data.cart.items.length !== 0 ? (
 					<div className="mt-2">
 						<table className="w-full">
 							<thead>
@@ -217,9 +218,18 @@ const Cart = () => {
 							</Link>
 						</div>
 					</div>) : (
-					<p className="mt-1 max-w-2xl text-sm leading-5 text-gray-500">
-						Your shopping cart is empty.
-					</p>
+					<div>
+						<Image
+							className="h-auto w-1/4 mx-auto"
+							src="/empty_cart.svg"
+							alt="className"
+							width={896}
+							height={748}
+						/>
+						<p className="my-4 text-center text-sm leading-5 text-gray-500">
+							Your shopping cart is empty.
+						</p>
+					</div>
 
 				)}
 			</div>
