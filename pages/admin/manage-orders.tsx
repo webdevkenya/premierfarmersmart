@@ -1,12 +1,14 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, Fragment } from 'react';
 import { getSession } from '@auth0/nextjs-auth0';
 import prisma from '../../lib/prisma';
 import Layout from '../../components/Layout';
 import AdminSideBar from '../../components/Layout/AdminSideBar';
 import { gql, useQuery, useMutation } from '@apollo/client';
 import { toast, Toaster } from 'react-hot-toast';
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
+import { Disclosure } from '@headlessui/react'
+import OrderDetails from '../../components/OrderDetails'
 
 const GetAllOrdersQuery = gql`
 	query GetAllOrders($first: Int, $after: String) {
@@ -30,6 +32,7 @@ const GetAllOrdersQuery = gql`
                         location{
                             county
                             town
+                            name
                         }
                     }
                     amountPayable
@@ -38,6 +41,7 @@ const GetAllOrdersQuery = gql`
                         id
                         name
                         price
+                        priceType
                         quantity
                         image
                     }
@@ -166,6 +170,9 @@ const ManageOrders = () => {
                                 </div>
                             </th>
                             <th scope="col" className="px-6 py-3">
+
+                            </th>
+                            <th scope="col" className="px-6 py-3">
                                 Order ID
                             </th>
                             <th scope="col" className="px-6 py-3">
@@ -184,57 +191,82 @@ const ManageOrders = () => {
                     </thead>
                     <tbody>
                         {
-                            data?.orders.edges.map(({ node: { id, shippingAddress: { first_name, last_name }, createdAt, deliveryStatus } }) => (
-                                <tr key={id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                    <td className="w-4 p-4 hidden">
-                                        <div className="flex items-center">
-                                            <input id="checkbox-table-search-1" type="checkbox" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
-                                            <label htmlFor="checkbox-table-search-1" className="sr-only">checkbox</label>
-                                        </div>
-                                    </td>
-                                    <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                        {id}
-                                    </th>
+                            data?.orders.edges.map(({ node: { id, items, shippingAddress: { first_name, last_name, specific_address, location }, createdAt, deliveryStatus, amountPaid, amountPayable, deliveryStart, deliveryStop } }) => (
 
-                                    <td className="px-6 py-4">
-                                        {`${first_name} ${last_name}`}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        {format(+createdAt, 'MMM d, y | kk:m')}
-                                    </td>
-                                    <td className={
-                                        classNames(
-                                            deliveryStatus === "PENDING" ? 'text-red-600' : deliveryStatus === 'DISPATCHED' ? 'text-sky-700' : 'text-green-800', 'px-6 py-4 font-extrabold'
-                                        )
-                                    }>
-                                        {deliveryStatus}
-                                    </td>
-                                    <td className="px-6 py-4 flex justify-between">
-                                        <button
-                                            className={classNames(
-                                                deliveryStatus === "PENDING"
-                                                    ? 'cursor-pointer text-sky-700 hover:underline'
-                                                    : 'cursor-not-allowed text-gray-400',
-                                                'font-medium'
-                                            )}
-                                            onClick={() => handleDispatchOrder(id)}
-                                            disabled={deliveryStatus === "DISPATCHED"}
-                                        >
-                                            Dispatch
-                                        </button>
-                                        <button
-                                            className={classNames(
-                                                deliveryStatus !== "DELIVERED"
-                                                    ? 'cursor-pointer text-green-800 hover:underline'
-                                                    : 'cursor-not-allowed text-gray-400',
-                                                'font-medium'
-                                            )} onClick={() => handleMarkAsDelivered(id)}
-                                            disabled={deliveryStatus === "DELIVERED"}
-                                        >
-                                            Mark as delivered
-                                        </button>
-                                    </td>
-                                </tr>
+                                <Disclosure as={Fragment} key={id} >
+                                    {({ open }) => (
+                                        <>
+                                            <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                                <Disclosure.Button as={Fragment} >
+                                                    <td className="w-4 p-4 cursor-pointer">
+                                                        <ChevronDownIcon className={classNames(open ? 'rotate-180' : 'rotate-0', 'w-5 h-5 transition duration-150 ease-in-out')} />
+                                                    </td>
+                                                </Disclosure.Button>
+                                                <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                    {id}
+                                                </th>
+
+                                                <td className="px-6 py-4">
+                                                    {`${first_name} ${last_name}`}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    {format(+createdAt, 'MMM d, y | kk:m')}
+                                                </td>
+                                                <td className={
+                                                    classNames(
+                                                        deliveryStatus === "PENDING" ? 'text-red-600' : deliveryStatus === 'DISPATCHED' ? 'text-sky-700' : 'text-green-800', 'px-6 py-4 font-extrabold'
+                                                    )
+                                                }>
+                                                    {deliveryStatus}
+                                                </td>
+                                                <td className="px-6 py-4 flex justify-between">
+                                                    <button
+                                                        className={classNames(
+                                                            deliveryStatus === "PENDING"
+                                                                ? 'cursor-pointer text-sky-700 hover:underline'
+                                                                : 'cursor-not-allowed text-gray-400',
+                                                            'font-medium'
+                                                        )}
+                                                        onClick={() => handleDispatchOrder(id)}
+                                                        disabled={deliveryStatus === "DISPATCHED"}
+                                                    >
+                                                        Dispatch
+                                                    </button>
+                                                    <button
+                                                        className={classNames(
+                                                            deliveryStatus !== "DELIVERED"
+                                                                ? 'cursor-pointer text-green-800 hover:underline'
+                                                                : 'cursor-not-allowed text-gray-400',
+                                                            'font-medium'
+                                                        )} onClick={() => handleMarkAsDelivered(id)}
+                                                        disabled={deliveryStatus === "DELIVERED"}
+                                                    >
+                                                        Mark as delivered
+                                                    </button>
+                                                </td>
+                                            </tr>
+
+                                            <Disclosure.Panel as="tr" className="px-4 pt-4 pb-2 text-sm text-gray-500">
+                                                <td></td>
+                                                <td className='px-6 py-4' colSpan={5}>
+                                                    <OrderDetails order={{
+                                                        id,
+                                                        createdAt,
+                                                        items,
+                                                        specific_address,
+                                                        location,
+                                                        deliveryStart,
+                                                        deliveryStop,
+                                                        deliveryStatus,
+                                                        amountPayable,
+                                                        amountPaid
+                                                    }} />
+                                                </td>
+                                            </Disclosure.Panel>
+                                        </>
+                                    )}
+                                </Disclosure>
+
                             ))
                         }
                     </tbody>

@@ -2,7 +2,7 @@ import Image from 'next/image';
 import React from 'react';
 import { format } from 'date-fns';
 
-interface Item {
+export interface Item {
     id: string,
     name: string,
     quantity: number,
