@@ -5,7 +5,7 @@ import ContactForm from '../components/ContactForm';
 const ContactPage = () => {
 
     return (
-        <div className="px-4 py-6 bg-white rounded-lg">
+        <div className="px-4 py-6 bg-white rounded-b-lg min-h-[80vh] shadow-lg flex flex-col justify-center">
             <Image
                 className="h-auto w-1/4 mx-auto"
                 src="/support.svg"

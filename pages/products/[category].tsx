@@ -4,6 +4,7 @@ import ProductCard from '../../components/ProductCard';
 import { useRouter } from 'next/router'
 import Layout from '../../components/Layout';
 import ProductTabs from '../../components/Layout/ProductTabs';
+import ProductSkeleton from '../../components/Layout/ProductSkeleton';
 
 const GetProductsByCategoryQuery = gql`
 	query GetProductsByCategoryQuery($category: String, $first: Int, $after: String) {
@@ -35,7 +36,7 @@ function Products() {
         variables: { category, first: 12 },
     });
 
-    if (loading) return <p>Loading...</p>;
+    if (loading) return <ProductSkeleton />
     if (error) return <p>Oops something went wrong ... {error.message}</p>;
     const { endCursor, hasNextPage } = data?.getProductsByCategory.pageInfo;
 

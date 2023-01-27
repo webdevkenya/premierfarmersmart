@@ -4,7 +4,7 @@ import Link from 'next/link'
 class PrivacyPolicy extends React.Component {
     render() {
         return (
-            <div className="px-4 py-6 bg-white rounded-lg">
+            <div className="px-4 py-6">
                 <h1 className="text-2xl font-medium mb-2">Privacy Policy</h1>
                 <p>At Premier Farmers Mart, we are committed to protecting your privacy. This Privacy Policy applies to all information that we collect from you through our website, https://premierfarmersmart.co.ke/. By using our website, you consent to the collection and use of your information as outlined in this policy.</p>
                 <section className="my-6">

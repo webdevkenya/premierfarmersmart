@@ -1,7 +1,6 @@
 import React, { Fragment } from 'react';
 import Link from 'next/link';
 import { useUser } from '@auth0/nextjs-auth0/client';
-import { useShoppingCart } from '../../contexts/ShoppingCartContext';
 import Image from 'next/image';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { gql, useQuery } from '@apollo/client';
@@ -14,6 +13,8 @@ import {
 	ChevronDownIcon
 } from '@heroicons/react/24/outline';
 import { Popover } from '@headlessui/react'
+import { useRouter } from 'next/router';
+import CategoriesSkeleton from '../CategoriesSkeleton';
 
 
 const navigation = [
@@ -42,16 +43,15 @@ export const CartCountQuery = gql`
 `;
 
 export default function Header() {
+	const router = useRouter();
+	const currentPage = router.pathname;
 	const { data, loading } = useQuery(CategoriesQuery)
 	const { data: cartCountData } = useQuery(CartCountQuery)
 	const { user, error } = useUser();
 
-	//const { count } = useShoppingCart();
-
-	// if (loading) return <p>loading...</p>
 	if (error) return <div>{error.message}</div>;
 	return (
-		<Disclosure as="nav" className="border shadow ">
+		<Disclosure as="nav" className="border-b shadow">
 			{({ open }) => (
 				<>
 					<div className="mx-auto max-w-[95%] px-2 ">
@@ -143,20 +143,23 @@ export default function Header() {
 												<Popover.Panel className="absolute left-1/2 z-10 mt-3 w-screen max-w-sm -translate-x-1/2 transform px-4 sm:px-0 lg:max-w-3xl">
 													<div className="overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
 														<div className="relative grid gap-8 bg-white p-7 lg:grid-cols-2">
-															{data?.categories.map(({ category, id }) => (
-																<Link
-																	key={id}
-																	href={`/products/${encodeURIComponent(category)}`} className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus-visible:text-grray-900"
-																>
+															{
+																loading ? (<><CategoriesSkeleton /><CategoriesSkeleton /></>) :
 
-																	<div className="ml-4">
-																		<p className="text-sm font-medium text-gray-900">
-																			{category}
-																		</p>
+																	data?.categories.map(({ category, id }) => (
+																		<Link
+																			key={id}
+																			href={`/products/${encodeURIComponent(category)}`} className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus-visible:text-gray-900"
+																		>
 
-																	</div>
-																</Link>
-															))}
+																			<div className="ml-4">
+																				<p className="text-sm font-medium text-gray-900">
+																					{category}
+																				</p>
+
+																			</div>
+																		</Link>
+																	))}
 														</div>
 
 													</div>
@@ -246,7 +249,7 @@ export default function Header() {
 								) : (
 									<>
 										<Link
-											href="/api/auth/login"
+											href={`/api/auth/login?returnTo=${currentPage}`}
 											className="block sm:hidden ml-3 p-1 text-gray-300 hover:text-gray-700"
 										>
 
@@ -257,7 +260,7 @@ export default function Header() {
 											<span className='text-xs'>Sign In</span>
 										</Link>
 										<Link
-											href="/api/auth/login"
+											href={`/api/auth/login?returnTo=${currentPage}`}
 											className="hidden sm:block sm:ml-3 px-3 py-2  text-sm font-medium rounded-full bg-gray-300 p-1 text-gray-500 hover:text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500"
 										>
 											Sign In

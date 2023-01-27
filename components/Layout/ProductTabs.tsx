@@ -1,8 +1,5 @@
 import { gql, useQuery } from '@apollo/client';
 import { Toaster } from 'react-hot-toast';
-import {
-    MagnifyingGlassIcon
-} from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
 
@@ -18,15 +15,13 @@ query CategoriesQuery {
 const ProductTabs = ({ children }) => {
     const { data, loading, error } = useQuery(CategoriesQuery)
 
-    if (loading) return <p>Loading...</p>;
+    // if (loading) return <p>loading...</p>;
     if (error) return <p>Oops something went wrong ... {error.message}</p>;
 
     return (
         <div className='px-8'>
             <Toaster />
             <h1 className="font-bold text-2xl my-4">Products we have in stock</h1>
-
-            {/* <div className='flex mb-4 flex-wrap sm:flex-nowrap space-y-4 sm:space-y-0'> */}
 
             <div className='grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 mx-auto gap-2 mb-4'>
                 {
@@ -37,8 +32,6 @@ const ProductTabs = ({ children }) => {
                     )
                 }
             </div>
-
-            {/* </div> */}
             {children}
         </div>
     )

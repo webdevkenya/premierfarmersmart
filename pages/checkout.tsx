@@ -235,7 +235,7 @@ export const getServerSideProps = async ({ req, res }) => {
 		return {
 			redirect: {
 				permanent: false,
-				destination: '/api/auth/login',
+				destination: '/api/auth/login?returnTo=/checkout',
 			},
 			props: {},
 		};

@@ -4,6 +4,7 @@ import { CldImage } from 'next-cloudinary';
 import { gql, useQuery, useMutation } from '@apollo/client';
 import { CartCountQuery } from '../components/Layout/Header';
 import Image from 'next/image';
+import CartSkeleton from '../components/CartSkeleton';
 
 const CartQuery = gql`
 	query CartQuery {
@@ -78,15 +79,16 @@ const Cart = () => {
 	const [removeFromCart] = useMutation(RemoveFromCartMutation)
 
 
-	if (loading) return <p>loading...</p>
+	if (loading) return <CartSkeleton />
 	if (error) return <p>{error?.message}</p>
 
 	return (
-		<div className="relative h-[50%] bg-white rounded-lg shadow-lg">
+		<div className="relative min-h-[80vh] rounded-b-lg shadow-lg">
 			<div className="px-4 py-5 sm:px-6">
 				<h3 className="text-lg leading-6 font-medium text-gray-900">
 					Shopping Cart
 				</h3>
+
 				{data.cart && data.cart.items.length !== 0 ? (
 					<div className="mt-2">
 						<table className="w-full">
@@ -238,36 +240,4 @@ const Cart = () => {
 };
 
 export default Cart;
-
-// export const getServerSideProps = async ({ req, res }) => {
-// 	// const session = req.cookies.sessionId
-// 	//	has session f46a9db1-59e2-4b94-9d253519ea940ce1
-// 	const cart = await prisma.cart.findUnique({
-// 		where: {
-// 			sessionId: 'f46a9db1-59e2-4b94-9d253519ea940ce1',
-// 		}, select: {
-// 			items: {
-// 				select: {
-// 					id: true,
-// 					quantity: true,
-// 					product: {
-// 						select: {
-// 							id: true,
-// 							image: true,
-// 							name: true,
-// 							price: true
-// 						}
-// 					}
-// 				}
-// 			}
-// 		}
-// 	});
-
-// 	console.log('cart', cart);
-
-
-// 	return {
-// 		props: { cart },
-// 	};
-// };
 
