@@ -5,9 +5,10 @@ import { CldImage } from 'next-cloudinary';
 import Layout from '../../components/Layout';
 import ProfileSideBar from '../../components/Layout/ProfileSideBar';
 import { format } from 'date-fns';
+import { log } from 'next-axiom'
 
 const Orders = ({ orders }) => {
-	console.log('orders', orders);
+	log.info('orders from orders page', orders)
 
 	return (
 		<>

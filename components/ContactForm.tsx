@@ -6,6 +6,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useModal } from '../contexts/ModalContext';
 import { AddressesQuery } from './AddressBook';
+import { log } from 'next-axiom';
 
 interface IFormInputs {
     name: string;
@@ -38,7 +39,7 @@ const ContactForm = () => {
     const onSubmit = (data: IFormInputs) => {
         const { name, email, message } =
             data;
-        console.log('contact form', data);
+        log.info('contact form data', data);
 
     };
 

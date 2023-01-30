@@ -5,6 +5,7 @@ import { CldImage } from 'next-cloudinary';
 import { StarIcon } from '@heroicons/react/24/outline';
 import { CartCountQuery } from './Layout/Header';
 import { GetCartTotalQuery } from '../pages/cart';
+import { log } from 'next-axiom';
 
 const AddFavoriteMutation = gql`
 	mutation ($id: String!) {
@@ -41,7 +42,7 @@ const ProductCard = ({ product }) => {
 
 
 	const handleFavorite = () => {
-		console.log(id);
+		log.info('handle favorite id', id);
 		const variables = {
 			id,
 		};

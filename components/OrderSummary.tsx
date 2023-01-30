@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useShoppingCart } from '../contexts/ShoppingCartContext';
 import { gql, useQuery } from '@apollo/client';
 import { useShippingAddress } from '../contexts/AddressContext'
+import { log } from 'next-axiom';
 
 export const GetCartTotalQuery = gql`
 	query GetCartTotal  {
@@ -47,7 +48,7 @@ const OrderSummary = () => {
 				id: address
 			}
 		})
-	console.log('shippingData', shippingData);
+	log.info('shippingData', shippingData);
 
 	return (
 		<div className="w-full mt-6 px-4">

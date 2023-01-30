@@ -38,3 +38,5 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
 		</UserProvider>
 	);
 }
+
+export { reportWebVitals } from 'next-axiom';

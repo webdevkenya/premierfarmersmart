@@ -13,10 +13,8 @@ export type Context = {
 export async function createContext({ req, res }): Promise<Context> {
 
 	const session = await getSession(req, res);
-	// console.log('cookies', req.cookies);
 
 	const sessionId = req.cookies?.sessionId
-	// console.log('sessionId', sessionId);
 
 	if (!sessionId) {
 		throw new Error('no session id')

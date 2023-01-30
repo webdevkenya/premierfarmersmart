@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { useShoppingCart } from '../contexts/ShoppingCartContext';
 import { CldImage } from 'next-cloudinary';
 import { gql, useQuery, useMutation } from '@apollo/client';
 import { CartCountQuery } from '../components/Layout/Header';
@@ -61,17 +60,6 @@ const RemoveFromCartMutation = gql`
 `;
 
 const Cart = () => {
-	// console.log('cart', cart);
-
-	// const {
-	// 	items,
-	// 	removeItem,
-	// 	getTotal,
-	// 	increaseQuantity,
-	// 	decreaseQuantity,
-	// 	isEmpty,
-	// } = useShoppingCart();
-
 	const { data, loading, error } = useQuery(CartQuery)
 	const { data: cartTotalData, } = useQuery(GetCartTotalQuery)
 	const [increaseQuantity] = useMutation(IncreaseQuantityMutation)

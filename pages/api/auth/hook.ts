@@ -1,9 +1,10 @@
 import prisma from '../../../lib/prisma';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { log } from 'next-axiom'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 	const { email, secret } = req.body;
-	console.log('login webhook', email);
+	log.info('login webhook called', email);
 	// Validates the request is a POST request
 	if (req.method !== 'POST') {
 		return res.status(403).json({ message: 'Method not allowed' });

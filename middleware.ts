@@ -7,13 +7,11 @@ export function middleware(request: NextRequest) {
   const response = NextResponse.next()
   const hasSession = request.cookies.has('sessionId') // => true
   if (!hasSession) {
-    console.log('no session');
     const newSessionId = uuidv4();
     response.cookies.set('sessionId', newSessionId)
 
   } else {
-    const sessionId = request.cookies.get('sessionId')?.value
-    console.log('has session', sessionId)
+    request.cookies.get('sessionId')?.value
   }
 
   return response

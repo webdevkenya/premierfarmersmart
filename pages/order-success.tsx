@@ -2,9 +2,10 @@ import Link from 'next/link';
 import { getSession } from '@auth0/nextjs-auth0';
 import OrderReceipt from '../components/OrderReceipt';
 import prisma from '../lib/prisma';
+import { log } from 'next-axiom';
 
 const OrderSuccess = ({ order }) => {
-	console.log('order-success', order);
+	log.info('order from order success page', order)
 
 	return (
 		<div className="max-w-4xl block mx-auto text-center">

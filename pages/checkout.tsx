@@ -9,6 +9,7 @@ import OrderSummary from '../components/OrderSummary';
 import { useRouter } from 'next/router';
 import { toast, Toaster } from 'react-hot-toast';
 import { useShippingAddress } from '../contexts/AddressContext'
+import { log } from 'next-axiom';
 
 const CreateStkRequestMutation = gql`
 	mutation CreateStkRequest(
@@ -113,7 +114,7 @@ const Checkout = () => {
 			const shipping = shippingData?.getShipping
 			const amountPayable = cartTotal + shipping
 
-			console.log(` amount payablle = ${cartTotal} + ${shipping} = ${amountPayable}`);
+			log.info(` amount payablle = ${cartTotal} + ${shipping} = ${amountPayable}`);
 
 			const res = await fetch('/api/stk', {
 				method: 'POST',
@@ -130,7 +131,7 @@ const Checkout = () => {
 			}
 
 			const result = await res.json();
-			console.log('result', result);
+			log.info('stk fetch request response', result);
 			toast.success(
 				'Payment initiated - you will receive a prompt on your phone'
 			);
@@ -146,9 +147,9 @@ const Checkout = () => {
 				shippingAddressId: address
 			};
 			const { data: createStkRequestData, errors } = await createStkRequest({ variables });
-			console.log('createStkRequestData', createStkRequestData);
+			log.info('createStkRequestData', createStkRequest);
 			if (errors) {
-				console.log('errors', errors);
+				log.error('create stk request error', errors);
 				throw new Error('could not create payment request');
 			}
 
@@ -165,6 +166,7 @@ const Checkout = () => {
 
 	if (statusQuery?.getStkRequestById?.status === 'SUCCESS') {
 		stopPolling();
+		log.info('payment status query', statusQuery.getStkRequestById);
 		router.push({
 			pathname: '/order-success',
 			query: {
@@ -175,7 +177,7 @@ const Checkout = () => {
 
 	if (statusQuery?.getStkRequestById?.status === 'FAILED') {
 		stopPolling();
-		console.log('result', statusQuery.getStkRequestById);
+		log.info('payment status query', statusQuery.getStkRequestById);
 		router.push({
 			pathname: '/order-fail',
 			query: {

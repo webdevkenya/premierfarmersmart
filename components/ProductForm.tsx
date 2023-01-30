@@ -7,6 +7,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useModal } from '../contexts/ModalContext';
 import { GetAllProductsQuery } from '../pages/admin/manage-products';
+import { log } from 'next-axiom';
 
 
 interface IFormInputs {
@@ -115,7 +116,7 @@ const ProductForm = () => {
             console.error(error);
             toast.error(`Something went wrong 😥 Please try again - ${error}`);
         }
-        console.log('result', result);
+        log.info('image upload result', result);
 
         setImageURL(result?.info?.public_id); // Updating local state with asset details
     };

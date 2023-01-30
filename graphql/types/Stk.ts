@@ -1,6 +1,6 @@
 import { objectType, enumType, list, extendType, nonNull, stringArg, intArg } from 'nexus';
+import { log } from 'next-axiom'
 import { Address } from './Address';
-import { Cart } from './Cart';
 import { Order } from './Order';
 import { User } from './User';
 
@@ -100,7 +100,7 @@ export const StkResponse = objectType({
 							id: parent.id,
 						},
 					})
-					.Order();
+					.Order()
 			},
 		});
 	},
@@ -226,7 +226,7 @@ export const StkMutation = extendType({
 					shippingAddressId: args.shippingAddressId,
 				}
 
-				console.log('newStkRequest', newStkRequest);
+				log.info('newStkRequest', newStkRequest);
 
 				return await ctx.prisma.stkRequest.create({
 					data: newStkRequest

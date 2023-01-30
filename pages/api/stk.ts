@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { log } from 'next-axiom'
 
 const getTimestamp = () => {
 	const date = new Date();
@@ -66,7 +67,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 			AccountReference: 'Premier Farmers Mart',
 			TransactionDesc: 'payment of for order',
 		};
-		console.log('data', JSON.stringify(data));
+		log.info('stk request body', data);
 
 		const response = await fetch(
 			'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest',
@@ -81,7 +82,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 		);
 
 		const pres = await response.json();
-		console.log('response', pres);
+		log.info('stk fetch request response from api', pres);
 
 		if (response.status !== 200) {
 			throw new Error(
@@ -95,7 +96,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 		}
 		res.status(200).json(pres);
 	} catch (error) {
-		console.log(error);
+		log.error('payment stk error from api', error);
 		res.status(500).send(error.message);
 	}
 };

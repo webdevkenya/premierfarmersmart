@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { getSession } from '@auth0/nextjs-auth0';
 import prisma from '../lib/prisma';
 import Image from 'next/image';
+import { log } from 'next-axiom';
 
 interface Props {
 	stkResponse: {
@@ -12,10 +13,9 @@ interface Props {
 
 const OrderFail = ({ stkResponse }: Props) => {
 
-	console.log('order-fail', stkResponse);
+	log.info('stk response from order fail page', stkResponse);
 
-	const { ResultCode, ResultDesc } = stkResponse
-	console.log('order-fail', ResultCode, ResultDesc);
+	const { ResultDesc } = stkResponse
 
 	return (
 		<div className="h-screen px-4 mt-16">

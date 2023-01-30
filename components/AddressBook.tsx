@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast';
 import { RadioGroup } from '@headlessui/react'
 import { useShippingAddress } from '../contexts/AddressContext'
 import AddressForm from './AddressForm'
+import { log } from 'next-axiom'
 
 
 export const AddressesQuery = gql`
@@ -48,7 +49,7 @@ const AddressBook = () => {
 	if (error) return <p>{`Error! ${error.message}`}</p>;
 
 	const handleUpdateAddress = (id) => {
-		console.log('update', id);
+		log.info('handle update address id', id);
 	};
 
 	const handleDeleteAddress = (id) => {
