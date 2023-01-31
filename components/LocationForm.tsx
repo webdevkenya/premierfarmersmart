@@ -6,6 +6,8 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useModal } from '../contexts/ModalContext';
 import { GetAllLocationsQuery } from '../pages/admin/manage-locations';
+import Error from 'next/error';
+import { log } from 'next-axiom';
 
 
 interface IFormInputs {
@@ -69,8 +71,6 @@ const LocationForm = () => {
     );
 
     if (loading) return <p>Loading...</p>;
-    if (error) return <p>Error: {error.message}</p>;
-
 
     const onSubmit = (data: IFormInputs) => {
         const { name, county, town, shipping } =
@@ -94,7 +94,7 @@ const LocationForm = () => {
                 }
             );
         } catch (error) {
-            console.error(error);
+            log.error('location form', error)
         } finally {
             close();
         }

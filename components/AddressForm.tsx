@@ -6,6 +6,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useModal } from '../contexts/ModalContext';
 import { AddressesQuery } from './AddressBook';
+import Error from 'next/error';
 
 const CountiesQuery = gql`
 	query {
@@ -96,10 +97,10 @@ const AddressForm = () => {
 	const selectedCounty = watch('county');
 
 	if (loading) return <p>Loading...</p>;
-	if (error) return <p>Error: {error.message}</p>;
+
 
 	if (loadingM) return <p>Loading...</p>;
-	if (errorM) return <p>Error: {errorM.message}</p>;
+
 
 	const onSubmit = (data: IFormInputs) => {
 		const { firstName, lastName, phoneNumber, specificAddress, town } =

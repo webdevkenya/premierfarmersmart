@@ -7,6 +7,7 @@ import { ChevronDownIcon, CheckBadgeIcon } from '@heroicons/react/24/outline'
 import { gql, useQuery } from '@apollo/client';
 import CategoriesSkeleton from '../components/CategoriesSkeleton';
 import Error from 'next/error';
+import * as Sentry from '@sentry/nextjs'
 
 const CategoriesQuery = gql`
 query CategoriesQuery {

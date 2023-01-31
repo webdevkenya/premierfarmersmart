@@ -1,4 +1,3 @@
-// /graphql/context.ts
 import { PrismaClient } from '@prisma/client';
 import prisma from '../lib/prisma';
 import { Claims, getSession } from '@auth0/nextjs-auth0';
@@ -22,6 +21,7 @@ export async function createContext({ req, res }): Promise<Context> {
 	const hasSession = await prisma.session.findUnique({
 		where: { sessionId }
 	});
+
 	if (!hasSession) {
 		const res = await prisma.session.create({
 			data: { sessionId }

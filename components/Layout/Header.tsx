@@ -15,6 +15,7 @@ import {
 import { Popover } from '@headlessui/react'
 import { useRouter } from 'next/router';
 import CategoriesSkeleton from '../CategoriesSkeleton';
+import Error from 'next/error';
 
 
 const navigation = [
@@ -49,7 +50,8 @@ export default function Header() {
 	const { data: cartCountData } = useQuery(CartCountQuery)
 	const { user, error } = useUser();
 
-	if (error) return <div>{error.message}</div>;
+	if (error) return <Error statusCode={500} />
+
 	return (
 		<Disclosure as="nav" className="border-b shadow">
 			{({ open }) => (

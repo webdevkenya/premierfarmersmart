@@ -105,7 +105,7 @@ const ProductForm = () => {
                 error: `Something went wrong 😥 Please try again -  ${error}`,
             });
         } catch (error) {
-            console.error(error);
+            console.log('create product error', error);
         } finally {
             close();
         }
@@ -113,7 +113,7 @@ const ProductForm = () => {
 
     const onImageUpload = (error, result, _widget) => {
         if (error) {
-            console.error(error);
+            log.error('image upload error', error)
             toast.error(`Something went wrong 😥 Please try again - ${error}`);
         }
         log.info('image upload result', result);

@@ -53,7 +53,7 @@ const ProductCard = ({ product }) => {
 				error: `Something went wrong 😥 Please try again -  ${error}`,
 			});
 		} catch (error) {
-			console.error(error);
+			log.error('handle favorites error', error)
 		}
 	};
 
