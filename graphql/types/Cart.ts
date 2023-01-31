@@ -124,7 +124,7 @@ export const CartQuery = extendType({
 							}
 						}
 					})
-				return cart._count.items
+				return cart?._count?.items ?? 0
 			},
 		});
 	},

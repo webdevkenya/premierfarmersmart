@@ -16,7 +16,7 @@ export async function createContext({ req, res }): Promise<Context> {
 	const sessionId = req.cookies?.sessionId
 
 	if (!sessionId) {
-		throw new Error('no session id')
+		throw new Error('user has no session')
 	}
 	const hasSession = await prisma.session.findUnique({
 		where: { sessionId }
@@ -28,7 +28,7 @@ export async function createContext({ req, res }): Promise<Context> {
 		})
 
 		if (!res) {
-			throw new Error('unable to save session')
+			throw new Error('unable to save user session')
 		}
 
 	}
