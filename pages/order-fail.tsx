@@ -25,6 +25,7 @@ const OrderFail = ({ stkResponse }: Props) => {
 				alt="className"
 				width={525}
 				height={418}
+				priority
 			/>
 			<h1 className="text-3xl font-bold text-center my-4">Oops! Payment Failed </h1>
 			<h3 className="text-gray-600 text-2xl text-center mb-4">

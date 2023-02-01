@@ -89,6 +89,7 @@ export default function Header() {
 											alt="logo"
 											height={57}
 											width={37}
+											priority
 										/>
 										<Image
 											className="hidden h-11 w-auto md:block"
@@ -96,6 +97,7 @@ export default function Header() {
 											alt="logo"
 											width={309}
 											height={57}
+											priority
 										/>
 									</Link>
 								</div>

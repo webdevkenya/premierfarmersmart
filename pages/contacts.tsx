@@ -12,6 +12,7 @@ const ContactPage = () => {
                 alt="className"
                 width={312}
                 height={264}
+                priority
             />
             <h1 className="text-2xl font-medium text-center my-4">Contact Us</h1>
             <div className="my-4 text-center text-sm leading-5 text-gray-500">

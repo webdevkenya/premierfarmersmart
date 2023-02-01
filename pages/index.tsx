@@ -97,6 +97,7 @@ export default function Home() {
 						alt="illustration"
 						width={1793}
 						height={912}
+						priority
 					/>
 
 				</section>
