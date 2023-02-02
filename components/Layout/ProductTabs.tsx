@@ -16,7 +16,7 @@ const ProductTabs = ({ children }) => {
     const { data, loading, error } = useQuery(CategoriesQuery)
 
     // if (loading) return <p>loading...</p>;
-    if (error) return <p>Oops something went wrong ... {error.message}</p>;
+    if (error) return <div className="min-h-[80vh] flex justify-center items-center"><p>Oops something went wrong ... {error.message}</p></div>;
 
     return (
         <div className='px-8'>

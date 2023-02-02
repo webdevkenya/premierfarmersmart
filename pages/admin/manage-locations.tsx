@@ -11,6 +11,7 @@ import {
     MagnifyingGlassIcon
 
 } from '@heroicons/react/24/outline';
+import { log } from 'next-axiom';
 
 export const GetAllLocationsQuery = gql`
 	query GetAllLocations($first: Int, $after: String) {
@@ -52,7 +53,7 @@ const ManageLocations = () => {
     );
 
     if (loading) return <p>Loading...</p>;
-    if (error) return <p>Oops something went wrong ... {error.message}</p>;
+    if (error) return <div className='min-h-[80vh] flex justify-center items-center'><p>Oops something went wrong ... {error.message}</p></div>;
     const { endCursor, hasNextPage } = data.locations.pageInfo;
 
     const handleDeleteLocation = (id) => {
@@ -70,7 +71,7 @@ const ManageLocations = () => {
                 }
             );
         } catch (error) {
-            console.error(error);
+            log.error(error);
         }
     };
 

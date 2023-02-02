@@ -9,6 +9,7 @@ import { MagnifyingGlassIcon, ChevronDownIcon } from '@heroicons/react/24/outlin
 import { format } from 'date-fns';
 import { Disclosure } from '@headlessui/react'
 import OrderDetails from '../../components/OrderDetails'
+import { log } from 'next-axiom';
 
 const GetAllOrdersQuery = gql`
 	query GetAllOrders($first: Int, $after: String) {
@@ -87,7 +88,7 @@ const ManageOrders = () => {
 
 
     if (loading) return <p>Loading...</p>;
-    if (error) return <p>Oops something went wrong ... {error.message}</p>;
+    if (error) return <div className="min-h-[80vh] flex justify-center items-center"><p>Oops something went wrong ... {error.message}</p></div>;
     const { endCursor, hasNextPage } = data.orders.pageInfo;
 
     const handleDispatchOrder = (id) => {
@@ -105,7 +106,7 @@ const ManageOrders = () => {
                 }
             );
         } catch (error) {
-            console.error(error);
+            log.error(error);
         }
     };
 
@@ -124,7 +125,7 @@ const ManageOrders = () => {
                 }
             );
         } catch (error) {
-            console.error(error);
+            log.error(error);
         }
     };
 

@@ -37,7 +37,7 @@ function Products() {
     });
 
     if (loading) return <ProductSkeleton />
-    if (error) return <p>Oops something went wrong ... {error.message}</p>;
+    if (error) return <div className='min-h-[80vh] flex justify-center items-center'><p>Oops something went wrong ... {error.message}</p></div>;
     const { endCursor, hasNextPage } = data?.getProductsByCategory.pageInfo;
 
     return (

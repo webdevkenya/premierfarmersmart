@@ -68,7 +68,8 @@ const Cart = () => {
 
 
 	if (loading) return <CartSkeleton />
-	if (error) return <p>{error?.message}</p>
+	if (error) return <div className="min-h-[80vh] flex justify-center items-center"><p>{`Error! ${error.message}`}</p></div>;
+
 
 	return (
 		<div className="relative min-h-[80vh] rounded-b-lg shadow-lg">

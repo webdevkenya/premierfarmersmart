@@ -160,7 +160,7 @@ const Checkout = () => {
 			startPolling(1000);
 		} catch (error) {
 			toast.error('Something went wrong please try again');
-			console.error(error);
+			log.error(error);
 		}
 	};
 

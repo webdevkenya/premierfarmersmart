@@ -7,6 +7,7 @@ import { CldImage } from 'next-cloudinary';
 import Layout from '../../components/Layout';
 import ProfileSideBar from '../../components/Layout/ProfileSideBar';
 import ProductCard from '../../components/ProductCard';
+import { log } from 'next-axiom';
 
 const DeleteFavoriteMutation = gql`
 	mutation deleteFavorite($id: String!) {
@@ -30,7 +31,7 @@ const Favorites = ({ favorites }) => {
 				error: `Something went wrong 😥 Please try again -  ${error}`,
 			});
 		} catch (error) {
-			console.error(error);
+			log.error(error);
 		}
 	};
 

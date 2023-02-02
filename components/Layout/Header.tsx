@@ -50,7 +50,8 @@ export default function Header() {
 	const { data: cartCountData } = useQuery(CartCountQuery)
 	const { user, error } = useUser();
 
-	if (error) return <Error statusCode={500} />
+	if (error) return <div className="min-h-[80vh] flex justify-center items-center"><p>{`Error! ${error.message}`}</p></div>;
+
 
 	return (
 		<Disclosure as="nav" className="border-b shadow">

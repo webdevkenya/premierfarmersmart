@@ -9,6 +9,7 @@ import ProductForm from '../../components/ProductForm';
 import { toast, Toaster } from 'react-hot-toast';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { CartCountQuery } from '../../components/Layout/Header';
+import { log } from 'next-axiom';
 
 
 export const GetAllProductsQuery = gql`
@@ -50,7 +51,7 @@ const ManageProducts = () => {
     );
 
     if (loading) return <p>Loading...</p>;
-    if (error) return <p>Oops something went wrong ... {error.message}</p>;
+    if (error) return <div className='min-h-[80vh] flex justify-center items-center'><p>Oops something went wrong ... {error.message}</p></div>;
     const { endCursor, hasNextPage } = data.products.pageInfo;
 
     const handleDeleteProduct = (id) => {
@@ -68,7 +69,7 @@ const ManageProducts = () => {
                 }
             );
         } catch (error) {
-            console.error(error);
+            log.error(error);
         }
     };
 

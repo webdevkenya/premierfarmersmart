@@ -46,7 +46,7 @@ const AddressBook = () => {
 	// const [setDefaultAddress] = useMutation(SET_DEFAULT_ADDRESS_MUTATION);
 
 	if (loading) return <p>Loading... </p>;
-	if (error) return <p>{`Error! ${error.message}`}</p>;
+	if (error) return <div className="min-h-[80vh] flex justify-center items-center"><p>{`Error! ${error.message}`}</p></div>;;
 
 	const handleUpdateAddress = (id) => {
 		log.info('handle update address id', id);

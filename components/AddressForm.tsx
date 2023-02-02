@@ -98,8 +98,10 @@ const AddressForm = () => {
 
 	if (loading) return <p>Loading...</p>;
 
+	if (error) return <div className="min-h-[80vh] flex justify-center items-center"><p>{`Error! ${error.message}`}</p></div>;;
 
 	if (loadingM) return <p>Loading...</p>;
+	if (errorM) return <div className="min-h-[80vh] flex justify-center items-center"><p>{`Error! ${errorM.message}`}</p></div>;
 
 
 	const onSubmit = (data: IFormInputs) => {

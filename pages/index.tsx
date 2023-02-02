@@ -6,8 +6,6 @@ import { Menu, Transition } from '@headlessui/react'
 import { ChevronDownIcon, CheckBadgeIcon } from '@heroicons/react/24/outline'
 import { gql, useQuery } from '@apollo/client';
 import CategoriesSkeleton from '../components/CategoriesSkeleton';
-import Error from 'next/error';
-import * as Sentry from '@sentry/nextjs'
 
 const CategoriesQuery = gql`
 query CategoriesQuery {
@@ -21,6 +19,9 @@ query CategoriesQuery {
 export default function Home() {
 	const { data, loading, error } = useQuery(CategoriesQuery)
 
+	if (error) {
+		if (error) return <div className="min-h-[80vh] flex justify-center items-center"><p>{`Error! ${error.message}`}</p></div >;;
+	}
 
 	return (
 		<>
