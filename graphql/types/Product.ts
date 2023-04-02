@@ -1,87 +1,133 @@
-import { objectType, extendType, intArg, stringArg, nonNull } from 'nexus';
-import { User } from './User';
+import { objectType, arg, nonNull, list, stringArg, intArg, inputObjectType, enumType, extendType } from 'nexus';
+import { Prisma } from "@prisma/client"
 
 export const Product = objectType({
-	name: 'Product',
+	name: "Product",
 	definition(t) {
-		t.string('id');
-		t.string('name');
-		t.int('price');
-		t.string('price_type');
-		t.string('category');
-		t.int('stock');
-		t.string('image');
-		t.string('category');
-		t.list.field('users', {
-			type: User,
-			async resolve(parent, _args, ctx) {
-				return await ctx.prisma.product
-					.findUnique({
-						where: {
-							id: parent.id,
-						},
-					})
-					.users();
+		t.nonNull.string("id")
+		t.nonNull.dateTime("createdAt")
+		t.nonNull.dateTime("updatedAt")
+		t.nonNull.string("image")
+		t.nonNull.string("name")
+		t.nonNull.positiveInt("price")
+		t.nonNull.string("price_type")
+		t.nonNull.string("category")
+		t.nonNull.positiveInt("stock")
+	}
+})
+const ProductEdge = objectType({
+	name: "ProductEdge",
+	definition(t) {
+		t.nonNull.string("cursor")
+		t.nonNull.field("node", { type: Product })
+	}
+})
+const ProductPageInfo = objectType({
+	name: "ProductPageInfo",
+	definition(t) {
+		t.nonNull.string("endCursor")
+		t.nonNull.boolean("hasNextPage")
+	}
+})
+const ProductResponse = objectType({
+	name: "ProductResponse",
+	definition(t) {
+		t.nonNull.list.nonNull.field("edges", { type: ProductEdge })
+		t.nonNull.field("pageInfo", { type: ProductPageInfo })
+	}
+})
+
+const ProductInput = inputObjectType({
+	name: "ProductInput",
+	definition(t) {
+		t.nonNull.string("category")
+		t.nonNull.string("image")
+		t.nonNull.string("name")
+		t.nonNull.positiveInt("price")
+		t.nonNull.string("price_type")
+		t.nonNull.positiveInt("stock")
+	}
+});
+const ProductOrderByInput = inputObjectType({
+	name: "ProductOrderByInput",
+	definition(t) {
+		t.field("createdAt", { type: Sort })
+		t.field("updatedAt", { type: Sort })
+		t.field("name", { type: Sort })
+		t.field("price", { type: Sort })
+		t.field("category", { type: Sort })
+	}
+});
+
+const Sort = enumType({
+	name: "Sort",
+	members: ['asc', 'desc'],
+});
+
+export const Category = objectType({
+	name: 'Category',
+	definition(t) {
+		t.string('id')
+		t.string('category')
+	},
+});
+
+export const Query = extendType({
+	type: "Query",
+	definition(t) {
+		t.nonNull.list.field('categories', {
+			type: Category,
+			async resolve(_parent, _args, ctx) {
+				return await ctx.prisma.product.findMany({
+					select: { category: true, id: true },
+					distinct: 'category',
+				});
 			},
 		});
-	},
-});
-
-export const Edge = objectType({
-	name: 'Edge',
-	definition(t) {
-		t.string('cursor');
-		t.field('node', {
-			type: Product,
-		});
-	},
-});
-
-export const PageInfo = objectType({
-	name: 'PageInfo',
-	definition(t) {
-		t.string('endCursor');
-		t.boolean('hasNextPage');
-	},
-});
-
-export const Response = objectType({
-	name: 'Response',
-	definition(t) {
-		t.field('pageInfo', { type: PageInfo });
-		t.list.field('edges', {
-			type: Edge,
-		});
-	},
-});
-
-// get All Products
-export const ProductsQuery = extendType({
-	type: 'Query',
-	definition(t) {
-		t.field('products', {
-			type: Response,
+		t.field("products", {
+			type: ProductResponse,
 			args: {
-				first: intArg(),
+				filter: stringArg(),
 				after: stringArg(),
-			},
-			async resolve(_parent, args, ctx) {
+				first: intArg(),
+				orderBy: arg({ type: list(nonNull(ProductOrderByInput)) }),
+				category: stringArg()
+			}, async resolve(_parent, args, ctx, _info) {
+				//handle filter
+				//fix me- how to use filter and category together
+				let where = args.filter
+					? {
+						OR: [
+							{ name: { contains: args.filter } },
+							{ category: { contains: args.filter } },
+						],
+					}
+					: args?.category ? {
+						category: { equals: args.category }
+					} : {}
+
+
+				//handle pagination
 				let queryResults = null;
 
 				if (args.after) {
 					// check if there is a cursor as the argument
 					queryResults = await ctx.prisma.product.findMany({
+						where,
 						take: args.first, // the number of items to return from the database
 						skip: 1, // skip the cursor
 						cursor: {
 							id: args.after, // the cursor
-						},
+						}, orderBy: args?.orderBy as Prisma.Enumerable<Prisma.ProductOrderByWithRelationInput> | undefined,
+
 					});
 				} else {
 					// if no cursor, this means that this is the first request
 					//  and we will return the first items in the database
 					queryResults = await ctx.prisma.product.findMany({
+						where,
 						take: args.first,
+						orderBy: args?.orderBy as Prisma.Enumerable<Prisma.ProductOrderByWithRelationInput> | undefined,
 					});
 				}
 				// if the initial request returns products
@@ -95,13 +141,12 @@ export const ProductsQuery = extendType({
 					// query after the cursor to check if we have nextPage
 					const secondQueryResults =
 						await ctx.prisma.product.findMany({
+							where,
 							take: args.first,
 							cursor: {
 								id: myCursor,
 							},
-							orderBy: {
-								index: 'asc',
-							},
+							orderBy: args?.orderBy as Prisma.Enumerable<Prisma.ProductOrderByWithRelationInput> | undefined,
 						});
 
 					// return response
@@ -127,54 +172,61 @@ export const ProductsQuery = extendType({
 					},
 					edges: [],
 				};
-			},
-		});
-	},
-});
 
-export const CreateProductMutation = extendType({
-	type: 'Mutation',
+			}
+		})
+	}
+})
+
+
+
+export const Mutation = extendType({
+	type: "Mutation",
 	definition(t) {
-		t.nonNull.field('createProduct', {
+		t.nonNull.int("createProduct", {
+			args: {
+				products: arg({ type: nonNull(list(nonNull(ProductInput))) }),
+			},
+			async resolve(_parent, args, ctx, _info) {
+				const { products } = args;
+				const createdProducts = await ctx.prisma.product.createMany({
+					data: products,
+					skipDuplicates: true,
+				})
+				return createdProducts.count
+			}
+		})
+		t.nonNull.field("updateProduct", {
 			type: Product,
 			args: {
-				name: nonNull(stringArg()),
-				price: nonNull(intArg()),
-				price_type: nonNull(stringArg()),
-				image: nonNull(stringArg()),
-				category: nonNull(stringArg()),
-				stock: nonNull(intArg()),
+				id: nonNull(stringArg()),
+				product: arg({ type: nonNull(ProductInput) }),
 			},
-			async resolve(_parent, args, ctx) {
-				if (!ctx.user) {
-					throw new Error(
-						`You need to be logged in to perform an action`
-					);
-				}
-				const user = await ctx.prisma.user.findUnique({
+			async resolve(_parent, args, ctx, _info) {
+				const { id, product } = args;
+				const updatedProduct = await ctx.prisma.product.update({
 					where: {
-						email: ctx.user.email,
+						id,
+					},
+					data: product,
+				});
+				return updatedProduct;
+			}
+		})
+		t.nonNull.field("deleteProduct", {
+			type: Product,
+			args: {
+				id: nonNull(stringArg()),
+			},
+			async resolve(_parent, args, ctx, _info) {
+				const { id } = args;
+				const deletedProduct = await ctx.prisma.product.delete({
+					where: {
+						id,
 					},
 				});
-
-				if (user.role !== 'ADMIN') {
-					throw new Error(
-						`You do not have permission to perform action`
-					);
-				}
-				const newProduct = {
-					name: args.name,
-					price: args.price,
-					price_type: args.price_type,
-					image: args.image,
-					category: args.category,
-					stock: args.stock,
-				};
-
-				return await ctx.prisma.product.create({
-					data: newProduct,
-				});
-			},
-		});
-	},
-});
+				return deletedProduct;
+			}
+		})
+	}
+})

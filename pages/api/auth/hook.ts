@@ -1,9 +1,10 @@
 import prisma from '../../../lib/prisma';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { log } from 'next-axiom'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 	const { email, secret } = req.body;
-	console.log('create DB webhook', email, secret);
+	log.info('login webhook called', email);
 	// Validates the request is a POST request
 	if (req.method !== 'POST') {
 		return res.status(403).json({ message: 'Method not allowed' });
@@ -17,9 +18,15 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 	// Validates that an email was provided in the request body
 	if (email) {
 		// Creates a new user record
-		await prisma.user.create({
-			data: { email },
-		});
+		const user = await prisma.user.findUnique({
+			where: { email },
+		})
+		if (!user) {
+			await prisma.user.create({
+				data: { email },
+			});
+		}
+
 		return res.status(200).json({
 			message: `User with email: ${email} has been created successfully!`,
 		});

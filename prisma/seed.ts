@@ -29,7 +29,7 @@ for (let i = 0; i < 50; i++) {
 		price_type: faker.commerce.productMaterial(),
 		category: faker.commerce.department(),
 		stock: 50,
-		image: faker.image.food(),
+		image: 'groceries/asparagus.png',
 	});
 }
 

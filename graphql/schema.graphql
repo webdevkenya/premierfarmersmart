@@ -13,14 +13,47 @@ type Address {
   user: User
 }
 
+type CallbackMetadata {
+  name: String
+  stkResponseId: String
+  value: String
+}
+
+type Cart {
+  id: String
+  items: [CartItem]
+  sessionId: String
+  user: User
+}
+
+type CartItem {
+  cartId: String
+  id: String
+  product: Product
+  productTotal: Int
+  quantity: Int
+  sessionId: String
+}
+
+type Category {
+  category: String
+  id: String
+}
+
 type County {
   county: String
   towns: [Town]
 }
 
-type Edge {
-  cursor: String
-  node: Product
+"""
+A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
+"""
+scalar DateTime
+
+enum DeliveryStatus {
+  DELIVERED
+  DISPATCHED
+  PENDING
 }
 
 type Location {
@@ -32,61 +65,151 @@ type Location {
   town: String
 }
 
-type Mutation {
-  addFavorite(id: String!): Product!
-  createAddress(firstName: String!, lastName: String!, location: String!, phoneNumber: String!, specificAddress: String!): Address!
-  createOrder(amountPayable: Int!, cartTotal: Int!, checkoutrequestid: String!, mpesaNumber: String!, products: [String]!, shippingCost: Int!): Order!
-  createProduct(category: String!, image: String!, name: String!, price: Int!, price_type: String!, stock: Int!): Product!
-  deleteAddress(id: String): Address!
-  deleteFavorite(id: String): Product!
+type LocationEdge {
+  cursor: String
+  node: Location
 }
 
-type Order {
-  amount_payable: Int
-  cart_total: Int
-  checkoutrequestid: String
-  id: String
-  mpesa_number: String
-  payment: Stk
-  products: [Product]
-  shipping_cost: Int
-  status: OrderStatus
-  user: User
-}
-
-enum OrderStatus {
-  PAID
-  PENDING
-  SHIPPED
-}
-
-type PageInfo {
+type LocationPageInfo {
   endCursor: String
   hasNextPage: Boolean
 }
 
-type Product {
+type LocationResponse {
+  edges: [LocationEdge]
+  pageInfo: LocationPageInfo
+}
+
+type Mutation {
+  addFavorite(id: String!): Product!
+  addToCart(id: String!): Cart!
+  createAddress(firstName: String!, lastName: String!, location: String!, phoneNumber: String!, specificAddress: String!): Address!
+  createLocation(county: String!, name: String!, shipping: Int!, town: String!): Location!
+  createProduct(products: [ProductInput!]!): Int!
+  createStkRequest(CheckoutRequestID: String!, CustomerMessage: String!, MerchantRequestID: String!, ResponseCode: Int!, ResponseDescription: String!, amount: Int!, phone: String!, shippingAddressId: String!): StkRequest!
+  decreaseQuantity(id: String!): CartItem
+  deleteAddress(id: String!): Address!
+  deleteFavorite(id: String): Product!
+  deleteLocation(id: String!): Location!
+  deleteProduct(id: String!): Product!
+  dispatch(id: String!): Order!
+  increaseQuantity(id: String!): CartItem!
+  markDelivered(id: String!): Order!
+  removeFromCart(id: String!): CartItem
+  updateProduct(id: String!, product: ProductInput!): Product!
+}
+
+type Order {
+  StkResponse: StkResponse
+  amountPaid: Int
+  amountPayable: Int
+  checkoutrequestid: String
+  createdAt: String
+  deliveryStart: String
+  deliveryStatus: DeliveryStatus
+  deliveryStop: String
+  id: String
+  items: [OrderItem]
+  mpesaNumber: String
+  shippingAddress: Address
+  user: User
+}
+
+type OrderEdge {
+  cursor: String
+  node: Order
+}
+
+type OrderItem {
+  cartId: String
   category: String
   id: String
   image: String
   name: String
+  orderId: String
   price: Int
-  price_type: String
-  stock: Int
-  users: [User]
+  priceType: String
+  quantity: Int
+}
+
+type OrderPageInfo {
+  endCursor: String
+  hasNextPage: Boolean
+}
+
+enum PaymentStatus {
+  FAILED
+  PENDING
+  SUCCESS
+}
+
+"""Integers that will have a value greater than 0."""
+scalar PositiveInt
+
+type Product {
+  category: String!
+  createdAt: DateTime!
+  id: String!
+  image: String!
+  name: String!
+  price: PositiveInt!
+  price_type: String!
+  stock: PositiveInt!
+  updatedAt: DateTime!
+}
+
+type ProductEdge {
+  cursor: String!
+  node: Product!
+}
+
+input ProductInput {
+  category: String!
+  image: String!
+  name: String!
+  price: PositiveInt!
+  price_type: String!
+  stock: PositiveInt!
+}
+
+input ProductOrderByInput {
+  category: Sort
+  createdAt: Sort
+  name: Sort
+  price: Sort
+  updatedAt: Sort
+}
+
+type ProductPageInfo {
+  endCursor: String!
+  hasNextPage: Boolean!
+}
+
+type ProductResponse {
+  edges: [ProductEdge!]!
+  pageInfo: ProductPageInfo!
 }
 
 type Query {
   addresses: [Address]!
+  cart: Cart
+  cartCount: Int!
+  cartTotal: Int!
+  categories: [Category]!
   counties: [County]!
   getAllUsers: [User]!
-  order(id: String!): Order!
-  products(after: String, first: Int): Response
+  getShipping(id: String!): Int
+  getStkRequestById(id: String!): StkRequest
+  locations(after: String, first: Int): LocationResponse
+  orders(after: String, first: Int): Response
+  products(after: String, category: String, filter: String, first: Int, orderBy: [ProductOrderByInput!]): ProductResponse
+  stkRequest: [StkRequest]!
+  stkResponse: [StkResponse]!
 }
 
 type Response {
-  edges: [Edge]
-  pageInfo: PageInfo
+  edges: [OrderEdge]
+  pageInfo: OrderPageInfo
 }
 
 enum Role {
@@ -94,13 +217,36 @@ enum Role {
   USER
 }
 
-type Stk {
-  checkoutrequestid: String
+enum Sort {
+  asc
+  desc
+}
+
+type StkRequest {
+  CheckoutRequestID: String
+  CustomerMessage: String
+  MerchantRequestID: String
+  ResponseCode: Int
+  ResponseDescription: String
+  SessionId: String
+  StkResponse: StkResponse
+  amount: Int
   id: String
-  merchantrequestid: String
+  phone: String
+  shippingAddress: Address
+  status: PaymentStatus
+  user: User
+}
+
+type StkResponse {
+  CallbackMetadata: [CallbackMetadata]
+  CheckoutRequestID: String
+  MerchantRequestID: String
+  ResultCode: Int
+  ResultDesc: String
+  StkRequest: StkRequest
+  id: String
   order: Order
-  resultcode: String
-  resultdesc: String
 }
 
 type Town {

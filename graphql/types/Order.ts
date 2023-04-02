@@ -1,26 +1,54 @@
 import {
 	objectType,
 	extendType,
-	list,
-	nonNull,
 	intArg,
 	stringArg,
 	enumType,
+	nonNull,
 } from 'nexus';
-import { Product } from './Product';
 import { User } from './User';
-import { Stk } from './Stk';
+import { StkResponse } from './Stk';
+import { Address } from './Address';
+
+export const OrderItem = objectType({
+	name: 'OrderItem',
+	definition(t) {
+		t.string('id');
+		t.string('cartId')
+		t.string('orderId')
+		t.int('quantity');
+		t.string('name')
+		t.int('price')
+		t.string('priceType')
+		t.string('category')
+		t.string('image')
+	}
+})
 
 export const Order = objectType({
 	name: 'Order',
 	definition(t) {
 		t.string('id');
-		t.field('status', { type: OrderStatus });
-		t.int('cart_total');
-		t.string('mpesa_number');
+		t.string('createdAt')
+		t.string('deliveryStart')
+		t.string('deliveryStop')
+		t.field('deliveryStatus', { type: DeliveryStatus })
 		t.string('checkoutrequestid');
-		t.int('amount_payable');
-		t.int('shipping_cost');
+		t.int('amountPayable');
+		t.int('amountPaid');
+		t.string('mpesaNumber');
+		t.field('shippingAddress', {
+			type: Address,
+			async resolve(parent, _args, ctx) {
+				return await ctx.prisma.order
+					.findUnique({
+						where: {
+							id: parent.id,
+						},
+					})
+					.shippingAddress()
+			},
+		});
 		t.field('user', {
 			type: User,
 			async resolve(parent, _args, ctx) {
@@ -30,12 +58,23 @@ export const Order = objectType({
 							id: parent.id,
 						},
 					})
-					.User();
+					.user()
 			},
 		});
-		t.field('payment', { type: Stk });
-		t.list.field('products', {
-			type: Product,
+		t.list.field('items', {
+			type: OrderItem,
+			async resolve(parent, _args, ctx) {
+				return await ctx.prisma.order
+					.findUnique({
+						where: {
+							id: parent.id,
+						},
+					}).items()
+
+			},
+		});
+		t.field('StkResponse', {
+			type: StkResponse,
 			async resolve(parent, _args, ctx) {
 				return await ctx.prisma.order
 					.findUnique({
@@ -43,48 +82,136 @@ export const Order = objectType({
 							id: parent.id,
 						},
 					})
-					.products();
+					.StkResponse();
 			},
 		});
 	},
 });
 
-const OrderStatus = enumType({
-	name: 'OrderStatus',
-	members: ['PENDING', 'PAID', 'SHIPPED'],
+const DeliveryStatus = enumType({
+	name: 'DeliveryStatus',
+	members: ['PENDING', 'DISPATCHED', 'DELIVERED'],
 });
+
+export const OrderEdge = objectType({
+	name: 'OrderEdge',
+	definition(t) {
+		t.string('cursor');
+		t.field('node', {
+			type: Order,
+		});
+	},
+});
+
+export const OrderPageInfo = objectType({
+	name: 'OrderPageInfo',
+	definition(t) {
+		t.string('endCursor');
+		t.boolean('hasNextPage');
+	},
+});
+
+export const OrderResponse = objectType({
+	name: 'Response',
+	definition(t) {
+		t.field('pageInfo', { type: OrderPageInfo });
+		t.list.field('edges', {
+			type: OrderEdge,
+		});
+	},
+});
+
 
 export const OrdersQuery = extendType({
 	type: 'Query',
 	definition(t) {
-		t.nonNull.field('order', {
-			type: Order,
+		t.field('orders', {
+			type: OrderResponse,
 			args: {
-				id: nonNull(stringArg()),
+				first: intArg(),
+				after: stringArg(),
 			},
-			resolve(_parent, args, ctx) {
-				return ctx.prisma.order.findUnique({
-					where: {
-						id: args.id,
+			async resolve(_parent, args, ctx) {
+				let queryResults = null;
+
+				if (args.after) {
+					// check if there is a cursor as the argument
+					queryResults = await ctx.prisma.order.findMany({
+						take: args.first, // the number of items to return from the database
+						skip: 1, // skip the cursor
+						cursor: {
+							id: args.after, // the cursor
+						}, orderBy: {
+							index: 'desc'
+						}
+					});
+				} else {
+					// if no cursor, this means that this is the first request
+					//  and we will return the first items in the database
+					queryResults = await ctx.prisma.order.findMany({
+						take: args.first, orderBy: {
+							index: 'desc'
+						}
+					});
+				}
+				// if the initial request returns orders
+				if (queryResults.length > 0) {
+					// get last element in previous result set
+					const lastOrderInResults =
+						queryResults[queryResults.length - 1];
+					// cursor we'll return in subsequent requests
+					const myCursor = lastOrderInResults.id;
+
+					// query after the cursor to check if we have nextPage
+					const secondQueryResults =
+						await ctx.prisma.order.findMany({
+							take: args.first,
+							cursor: {
+								id: myCursor,
+							},
+							orderBy: {
+								index: 'desc'
+							},
+						});
+
+					// return response
+					const result = {
+						pageInfo: {
+							endCursor: myCursor,
+							hasNextPage:
+								secondQueryResults.length >= args.first, //if the number of items requested is greater than the response of the second query, we have another page
+						},
+						edges: queryResults.map((order) => ({
+							cursor: order.id,
+							node: order,
+						})),
+					};
+
+					return result;
+				}
+
+				return {
+					pageInfo: {
+						endCursor: null,
+						hasNextPage: false,
 					},
-				});
+					edges: [],
+				};
 			},
 		});
+
 	},
 });
 
-export const CreateOrderMutation = extendType({
+
+
+export const OrderMutation = extendType({
 	type: 'Mutation',
 	definition(t) {
-		t.nonNull.field('createOrder', {
+		t.nonNull.field('dispatch', {
 			type: Order,
 			args: {
-				products: nonNull(list(stringArg())),
-				amountPayable: nonNull(intArg()),
-				cartTotal: nonNull(intArg()),
-				shippingCost: nonNull(intArg()),
-				mpesaNumber: nonNull(stringArg()),
-				checkoutrequestid: nonNull(stringArg()),
+				id: nonNull(stringArg()),
 			},
 			async resolve(_parent, args, ctx) {
 				if (!ctx.user) {
@@ -92,28 +219,65 @@ export const CreateOrderMutation = extendType({
 						`You need to be logged in to perform an action`
 					);
 				}
+
 				const user = await ctx.prisma.user.findUnique({
 					where: {
 						email: ctx.user.email,
 					},
 				});
 
-				const newOrder = {
-					products: {
-						connect: args.products.map((id) => ({ id })),
-					},
-					cart_total: args.cartTotal,
-					amount_payable: args.amountPayable,
-					shipping_cost: args.shippingCost,
-					mpesa_number: args.mpesaNumber,
-					checkoutrequestid: args.checkoutrequestid,
-					userId: user.id,
-				};
+				if (user?.role !== 'ADMIN') {
+					throw new Error(
+						`You do not have permission to perform action`
+					);
+				}
 
-				return await ctx.prisma.order.create({
-					data: newOrder,
+				return await ctx.prisma.order.update({
+					where: {
+						id: args.id,
+					},
+					data: {
+						deliveryStart: new Date(),
+						deliveryStatus: 'DISPATCHED',
+					},
+				});
+			},
+		});
+		t.nonNull.field('markDelivered', {
+			type: Order,
+			args: {
+				id: nonNull(stringArg()),
+			},
+			async resolve(_parent, args, ctx) {
+				if (!ctx.user) {
+					throw new Error(
+						`You need to be logged in to perform an action`
+					);
+				}
+
+				const user = await ctx.prisma.user.findUnique({
+					where: {
+						email: ctx.user.email,
+					},
+				});
+
+				if (user?.role !== 'ADMIN') {
+					throw new Error(
+						`You do not have permission to perform action`
+					);
+				}
+
+				return await ctx.prisma.order.update({
+					where: {
+						id: args.id,
+					},
+					data: {
+						deliveryStop: new Date(),
+						deliveryStatus: 'DELIVERED',
+					},
 				});
 			},
 		});
 	},
 });
+

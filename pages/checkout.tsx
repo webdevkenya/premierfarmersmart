@@ -1,45 +1,63 @@
 import React from 'react';
 import { getSession } from '@auth0/nextjs-auth0';
-import { gql, useMutation, useLazyQuery } from '@apollo/client';
+import { gql, useMutation, useLazyQuery, useQuery } from '@apollo/client';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import AddressBook from '../components/AddressBook';
 import OrderSummary from '../components/OrderSummary';
-import { useShoppingCart } from '../contexts/ShoppingCartContext';
 import { useRouter } from 'next/router';
+import { toast, Toaster } from 'react-hot-toast';
+import { useShippingAddress } from '../contexts/AddressContext'
+import { log } from 'next-axiom';
 
-const CreateOrderMutation = gql`
-	mutation (
-		$products: [String]!
-		$amountPayable: Int!
-		$shippingCost: Int!
-		$cartTotal: Int!
-		$mpesaNumber: String!
-		$checkoutrequestid: String!
+const CreateStkRequestMutation = gql`
+	mutation CreateStkRequest(
+		$MerchantRequestID: String!
+				$CheckoutRequestID: String!
+				$ResponseCode: Int!
+				$ResponseDescription: String!
+				$CustomerMessage: String!
+				$amount: Int!
+				$phone: String!
+				$shippingAddressId: String!
 	) {
-		createOrder(
-			products: $products
-			amountPayable: $amountPayable
-			shippingCost: $shippingCost
-			mpesaNumber: $mpesaNumber
-			cartTotal: $cartTotal
-			checkoutrequestid: $checkoutrequestid
+		createStkRequest(
+			MerchantRequestID: $MerchantRequestID
+				CheckoutRequestID: $CheckoutRequestID
+				ResponseCode: $ResponseCode
+				ResponseDescription: $ResponseDescription
+				CustomerMessage: $CustomerMessage
+				amount: $amount
+				phone: $phone
+				shippingAddressId: $shippingAddressId
 		) {
 			id
-			amount_payable
-			mpesa_number
-			checkoutrequestid
 		}
 	}
 `;
 
-const orderQuery = gql`
-	query GetPaymentStatus($id: String!) {
-		order(id: $id) {
-			status
+const GetStkRequestByIDQuery = gql`
+	query GetStkRequestByID($id: String!) {
+		getStkRequestById(id: $id) {
 			id
+			status
+			StkResponse{
+				id
+			}
 		}
+	}
+`;
+
+export const GetCartTotalQuery = gql`
+	query GetCartTotal  {
+		cartTotal
+	}
+`;
+
+export const GetShippingQuery = gql`
+	query GetShipping($id:String!){
+		getShipping(id: $id) 
 	}
 `;
 
@@ -60,6 +78,14 @@ const schema = yup
 
 const Checkout = () => {
 	const router = useRouter();
+	const { address } = useShippingAddress()
+	const { data: cartTotalData } = useQuery(GetCartTotalQuery)
+	const { data: shippingData } = useQuery(GetShippingQuery, {
+		variables: {
+			id: address
+		}
+	})
+
 	const {
 		register,
 		handleSubmit,
@@ -69,20 +95,26 @@ const Checkout = () => {
 		resolver: yupResolver(schema),
 	});
 
-	const [createOrder] = useMutation(CreateOrderMutation, {
+	const [createStkRequest] = useMutation(CreateStkRequestMutation, {
 		onCompleted: () => reset(),
 	});
 
 	const [getPaymentStatus, { data: statusQuery, stopPolling }] =
-		useLazyQuery(orderQuery);
-
-	const { items, amountPayable, getTotal, shipping } = useShoppingCart();
+		useLazyQuery(GetStkRequestByIDQuery);
 
 	const onSubmit = async (data: IFormInputs) => {
 		try {
+			if (!address) {
+				toast.error('Please select your delivery address');
+				return;
+			}
+
 			const { mpesaNumber } = data;
-			const amount = amountPayable();
-			const cartTotal = getTotal();
+			const cartTotal = cartTotalData?.cartTotal
+			const shipping = shippingData?.getShipping
+			const amountPayable = cartTotal + shipping
+
+			log.info(` amount payablle = ${cartTotal} + ${shipping} = ${amountPayable}`);
 
 			const res = await fetch('/api/stk', {
 				method: 'POST',
@@ -97,46 +129,67 @@ const Checkout = () => {
 			if (res.status !== 200) {
 				throw new Error('Payment failed');
 			}
+
 			const result = await res.json();
-			console.log('result', result);
+			log.info('stk fetch request response', result);
+			toast.success(
+				'Payment initiated - you will receive a prompt on your phone'
+			);
 
 			const variables = {
-				products: items.map(({ id }) => id),
-				amountPayable: amount,
-				shippingCost: shipping,
-				cartTotal,
-				mpesaNumber,
-				checkoutrequestid: result.CheckoutRequestID,
+				MerchantRequestID: result.MerchantRequestID,
+				CheckoutRequestID: result.CheckoutRequestID,
+				ResponseCode: parseInt(result.ResponseCode),
+				ResponseDescription: result.ResponseDescription,
+				CustomerMessage: result.CustomerMessage,
+				amount: amountPayable,
+				phone: mpesaNumber,
+				shippingAddressId: address
 			};
-			const order = await createOrder({ variables });
-			console.log('order', order);
-			if (!order) {
-				throw new Error('could not create order');
+			const { data: createStkRequestData, errors } = await createStkRequest({ variables });
+			log.info('createStkRequestData', createStkRequest);
+			if (errors) {
+				log.error('create stk request error', errors);
+				throw new Error('could not create payment request');
 			}
 
 			const { startPolling } = await getPaymentStatus({
-				variables: { id: order.data.createOrder.id },
+				variables: { id: createStkRequestData.createStkRequest.id },
 			});
 
 			startPolling(1000);
 		} catch (error) {
-			console.error(error);
+			toast.error('Something went wrong please try again');
+			log.error(error);
 		}
 	};
 
-	if (statusQuery?.order?.status === 'PAID') {
+	if (statusQuery?.getStkRequestById?.status === 'SUCCESS') {
 		stopPolling();
+		log.info('payment status query', statusQuery.getStkRequestById);
 		router.push({
-			pathname: '/success',
+			pathname: '/order-success',
 			query: {
-				orderNumber: statusQuery.order.id,
+				stkResponseId: statusQuery.getStkRequestById.StkResponse.id,
+			},
+		});
+	}
+
+	if (statusQuery?.getStkRequestById?.status === 'FAILED') {
+		stopPolling();
+		log.info('payment status query', statusQuery.getStkRequestById);
+		router.push({
+			pathname: '/order-fail',
+			query: {
+				stkResponseId: statusQuery.getStkRequestById.StkResponse.id,
 			},
 		});
 	}
 
 	return (
-		<div className="container mx-auto py-8">
-			<h1 className="text-3xl font-bold text-gray-900 mb-4">Checkout</h1>
+		<div className="max-w-[95%] mx-auto">
+			<Toaster />
+			<h1 className="text-3xl font-bold text-gray-900 mb-4 p-4">Checkout</h1>
 			<div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
 				<AddressBook />
 				<OrderSummary />
@@ -165,7 +218,7 @@ const Checkout = () => {
 
 						<button
 							type="submit"
-							className="mt-6 w-full text-center px-4 py-2 font-medium text-white bg-indigo-600 rounded-full hover:bg-indigo-500 focus:outline-none focus:bg-indigo-500"
+							className="mt-6 w-full text-center px-4 py-2 font-medium text-white bg-gray-800 rounded-full hover:bg-gray-900"
 						>
 							Pay with Mpesa
 						</button>
@@ -184,7 +237,7 @@ export const getServerSideProps = async ({ req, res }) => {
 		return {
 			redirect: {
 				permanent: false,
-				destination: '/api/auth/login',
+				destination: '/api/auth/login?returnTo=/checkout',
 			},
 			props: {},
 		};
