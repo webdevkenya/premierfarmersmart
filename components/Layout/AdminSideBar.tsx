@@ -4,6 +4,7 @@ import {
     ArchiveBoxIcon,
     MapIcon,
     PresentationChartLineIcon,
+    DocumentChartBarIcon,
     ClipboardDocumentListIcon
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
@@ -36,6 +37,20 @@ const AdminSideBar = ({ children }) => {
                                 </span>
                                 <span className="hidden md:block flex-1 ml-3 whitespace-nowrap">
                                     Dashboard
+                                </span>
+                            </Link>
+                        </li>
+                        <li>
+                            <Link
+                                href="/admin/bulk-upload"
+                                className="flex flex-col md:flex-row items-center p-2 text-base font-normal text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                                <DocumentChartBarIcon className="block h-6 w-6" />
+                                <span className="md:hidden text-xs text-center">
+                                    Bulk Upload
+                                </span>
+                                <span className="hidden md:block flex-1 ml-3 whitespace-nowrap">
+                                    Bulk Upload
                                 </span>
                             </Link>
                         </li>

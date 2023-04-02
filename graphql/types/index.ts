@@ -5,4 +5,5 @@ export * from './Location';
 export * from './Order';
 export * from './Stk';
 export * from './Cart';
-
+export * from "./scalars/Date";
+export * from "./scalars/PositiveInt";

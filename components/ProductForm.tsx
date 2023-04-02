@@ -69,7 +69,7 @@ const priceTypes = [
 const ProductForm = () => {
 
     const [imageURL, setImageURL] = useState<string>();
-    const { close } = useModal();
+    const { closeModal } = useModal();
 
     const {
         register,
@@ -107,7 +107,7 @@ const ProductForm = () => {
         } catch (error) {
             console.log('create product error', error);
         } finally {
-            close();
+            closeModal();
         }
     };
 

@@ -90,7 +90,7 @@ const ProductCard = ({ product }) => {
 				<div className="flex  items-center">
 					<button
 						onClick={handleFavorite}
-						className="text-xs font-semibold rounded-md px-4 py-1 leading-none border border-2 border-gray-800 text-gray-800 hover:border-gray-900 text-gray-900"
+						className="text-xs font-semibold rounded-md px-4 py-1 leading-none border-2 border-gray-800 hover:border-gray-900 text-gray-900"
 					>
 						<StarIcon className="block h-4 w-4" />
 					</button>

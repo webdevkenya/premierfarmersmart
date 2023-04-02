@@ -11,10 +11,9 @@ import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { CartCountQuery } from '../../components/Layout/Header';
 import { log } from 'next-axiom';
 
-
 export const GetAllProductsQuery = gql`
-	query GetAllProducts($first: Int, $after: String) {
-		products(first: $first, after: $after) {
+	query getAllProductsQuery($first: Int, $after: String,$orderBy: [ProductOrderByInput!]) {
+		products(first: $first, after: $after,orderBy: $orderBy) {
 			pageInfo {
 				endCursor
 				hasNextPage
@@ -43,7 +42,13 @@ const DeleteProductMutation = gql`
 const ManageProducts = () => {
 
     const { data, loading, error, fetchMore } = useQuery(GetAllProductsQuery, {
-        variables: { first: 12 },
+        variables: {
+            first: 12,
+            orderBy: [{
+                name: "asc"
+            }
+            ]
+        },
     });
 
     const [deleteProduct, { error: deleteProductError }] = useMutation(
@@ -89,7 +94,8 @@ const ManageProducts = () => {
                             <input type="text" id="table-search" className="block p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search for products" />
                         </div>
                     </div>
-                    <ModalWrapper title="Create Product">
+
+                    <ModalWrapper id="create-product" title="Create Product">
                         <ProductForm />
                     </ModalWrapper>
                 </div>

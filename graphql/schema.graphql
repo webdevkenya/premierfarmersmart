@@ -45,6 +45,11 @@ type County {
   towns: [Town]
 }
 
+"""
+A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
+"""
+scalar DateTime
+
 enum DeliveryStatus {
   DELIVERED
   DISPATCHED
@@ -80,7 +85,7 @@ type Mutation {
   addToCart(id: String!): Cart!
   createAddress(firstName: String!, lastName: String!, location: String!, phoneNumber: String!, specificAddress: String!): Address!
   createLocation(county: String!, name: String!, shipping: Int!, town: String!): Location!
-  createProduct(category: String!, image: String!, name: String!, price: Int!, price_type: String!, stock: Int!): Product!
+  createProduct(products: [ProductInput!]!): Int!
   createStkRequest(CheckoutRequestID: String!, CustomerMessage: String!, MerchantRequestID: String!, ResponseCode: Int!, ResponseDescription: String!, amount: Int!, phone: String!, shippingAddressId: String!): StkRequest!
   decreaseQuantity(id: String!): CartItem
   deleteAddress(id: String!): Address!
@@ -91,6 +96,7 @@ type Mutation {
   increaseQuantity(id: String!): CartItem!
   markDelivered(id: String!): Order!
   removeFromCart(id: String!): CartItem
+  updateProduct(id: String!, product: ProductInput!): Product!
 }
 
 type Order {
@@ -137,30 +143,51 @@ enum PaymentStatus {
   SUCCESS
 }
 
+"""Integers that will have a value greater than 0."""
+scalar PositiveInt
+
 type Product {
-  category: String
-  id: String
-  image: String
-  name: String
-  price: Int
-  price_type: String
-  stock: Int
-  users: [User]
+  category: String!
+  createdAt: DateTime!
+  id: String!
+  image: String!
+  name: String!
+  price: PositiveInt!
+  price_type: String!
+  stock: PositiveInt!
+  updatedAt: DateTime!
 }
 
 type ProductEdge {
-  cursor: String
-  node: Product
+  cursor: String!
+  node: Product!
+}
+
+input ProductInput {
+  category: String!
+  image: String!
+  name: String!
+  price: PositiveInt!
+  price_type: String!
+  stock: PositiveInt!
+}
+
+input ProductOrderByInput {
+  category: Sort
+  createdAt: Sort
+  name: Sort
+  price: Sort
+  updatedAt: Sort
 }
 
 type ProductPageInfo {
-  endCursor: String
-  hasNextPage: Boolean
+  endCursor: String!
+  hasNextPage: Boolean!
 }
 
 type ProductResponse {
-  edges: [ProductEdge]
-  pageInfo: ProductPageInfo
+  edges: [ProductEdge!]!
+  pageInfo: ProductPageInfo!
 }
 
 type Query {
@@ -171,12 +198,11 @@ type Query {
   categories: [Category]!
   counties: [County]!
   getAllUsers: [User]!
-  getProductsByCategory(after: String, category: String, first: Int): ProductResponse
   getShipping(id: String!): Int
   getStkRequestById(id: String!): StkRequest
   locations(after: String, first: Int): LocationResponse
   orders(after: String, first: Int): Response
-  products(after: String, first: Int): ProductResponse
+  products(after: String, category: String, filter: String, first: Int, orderBy: [ProductOrderByInput!]): ProductResponse
   stkRequest: [StkRequest]!
   stkResponse: [StkResponse]!
 }
@@ -189,6 +215,11 @@ type Response {
 enum Role {
   ADMIN
   USER
+}
+
+enum Sort {
+  asc
+  desc
 }
 
 type StkRequest {

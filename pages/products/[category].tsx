@@ -8,7 +8,7 @@ import ProductSkeleton from '../../components/Layout/ProductSkeleton';
 
 const GetProductsByCategoryQuery = gql`
 	query GetProductsByCategoryQuery($category: String, $first: Int, $after: String) {
-		getProductsByCategory(category: $category, first: $first, after: $after) {
+		products(category: $category, first: $first, after: $after) {
 			pageInfo {
 				endCursor
 				hasNextPage
@@ -38,12 +38,12 @@ function Products() {
 
     if (loading) return <ProductSkeleton />
     if (error) return <div className='min-h-[80vh] flex justify-center items-center'><p>Oops something went wrong ... {error.message}</p></div>;
-    const { endCursor, hasNextPage } = data?.getProductsByCategory.pageInfo;
+    const { endCursor, hasNextPage } = data?.products.pageInfo;
 
     return (
         <>
             <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
-                {data?.getProductsByCategory.edges.map(
+                {data?.products.edges.map(
                     ({ node }) => (
                         <ProductCard
                             key={node.id}
@@ -68,13 +68,13 @@ function Products() {
                                             fetchMoreResult,
                                         }
                                     ) => {
-                                        fetchMoreResult.getProductsByCategory.edges =
+                                        fetchMoreResult.products.edges =
                                             [
                                                 ...prevResult
-                                                    .getProductsByCategory
+                                                    .products
                                                     .edges,
                                                 ...fetchMoreResult
-                                                    .getProductsByCategory
+                                                    .products
                                                     .edges,
                                             ];
                                         return fetchMoreResult;
